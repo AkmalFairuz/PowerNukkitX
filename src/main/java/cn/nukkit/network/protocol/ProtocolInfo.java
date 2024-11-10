@@ -2,6 +2,8 @@ package cn.nukkit.network.protocol;
 
 import cn.nukkit.utils.SemVersion;
 
+import java.util.List;
+
 import static cn.nukkit.utils.Utils.dynamic;
 
 /**
@@ -11,14 +13,14 @@ public interface ProtocolInfo {
     /**
      * Actual Minecraft: PE protocol version
      */
-    int CURRENT_PROTOCOL = ProtocolInfo.PROTOCOL_748;
     int PROTOCOL_748 = dynamic(748); // 1.21.40
+    int CURRENT_PROTOCOL = PROTOCOL_748;
     int PROTOCOL_729 = dynamic(729); // 1.21.30
 
-    int[] COMPATIBLE_PROTOCOLS = new int[]{
+    List<Integer> COMPATIBLE_PROTOCOLS = List.of(
             CURRENT_PROTOCOL,
             PROTOCOL_729
-    };
+    );
 
     String MINECRAFT_VERSION_NETWORK = dynamic("1.21.40");
 

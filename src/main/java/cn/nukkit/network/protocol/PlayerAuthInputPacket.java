@@ -84,7 +84,9 @@ public class PlayerAuthInputPacket extends DataPacket {
         if(byteBuf.protocol >= ProtocolInfo.PROTOCOL_748) {
             this.interactRotation = byteBuf.readVector2f();
         }else{
-            byteBuf.readVector3f(); // vr gaze direction
+            if(this.playMode.equals(ClientPlayMode.REALITY)) {
+                byteBuf.readVector3f(); // vr gaze direction
+            }
             this.interactRotation = new Vector2f(0, 0);
         }
 

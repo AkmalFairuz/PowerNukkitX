@@ -178,13 +178,11 @@ public class BedrockPeer extends ChannelInboundHandlerAdapter {
     public void setCompression(CompressionStrategy strategy) {
         Objects.requireNonNull(strategy, "strategy");
 
-        boolean needsPrefix = protocolContext.get() >= 649; // TODO: do not hardcode
-
         ChannelHandler handler = this.channel.pipeline().get(CompressionCodec.NAME);
         if (handler == null) {
-            this.channel.pipeline().addBefore(BedrockBatchDecoder.NAME, CompressionCodec.NAME, new CompressionCodec(strategy, needsPrefix));
+            this.channel.pipeline().addBefore(BedrockBatchDecoder.NAME, CompressionCodec.NAME, new CompressionCodec(strategy, true));
         } else {
-            this.channel.pipeline().replace(CompressionCodec.NAME, CompressionCodec.NAME, new CompressionCodec(strategy, needsPrefix));
+            this.channel.pipeline().replace(CompressionCodec.NAME, CompressionCodec.NAME, new CompressionCodec(strategy, true));
         }
     }
 
