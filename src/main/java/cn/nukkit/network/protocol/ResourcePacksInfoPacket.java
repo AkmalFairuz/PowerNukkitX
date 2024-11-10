@@ -67,11 +67,11 @@ public class ResourcePacksInfoPacket extends DataPacket {
             byteBuf.writeString(!entry.getEncryptionKey().isEmpty() ? entry.getPackId().toString() : ""); // content identity
             byteBuf.writeBoolean(false); // scripting
             byteBuf.writeBoolean(false);    // isAddonPack
-            if(byteBuf.protocol >= ProtocolInfo.PROTOCOL_748) {
-                byteBuf.writeString(entry.cdnUrl());    // cdnUrl
-            }
             if (!behaviour) {
                 byteBuf.writeBoolean(false); // raytracing capable
+            }
+            if(byteBuf.protocol >= ProtocolInfo.PROTOCOL_748) {
+                byteBuf.writeString(entry.cdnUrl());    // cdnUrl
             }
         }
     }
