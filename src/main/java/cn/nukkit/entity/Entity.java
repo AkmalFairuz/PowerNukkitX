@@ -1590,6 +1590,10 @@ public abstract class Entity extends Location implements Metadatable, EntityID, 
         Server.broadcastPacket(this.hasSpawned.values(), pk);
     }
 
+    protected void broadcastMovement() {
+        broadcastMovement(false);
+    }
+
 
     protected void broadcastMovement(boolean tp) {
         var pk = new MoveEntityAbsolutePacket();

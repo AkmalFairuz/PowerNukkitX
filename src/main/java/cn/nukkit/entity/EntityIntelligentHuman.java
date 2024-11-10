@@ -160,7 +160,7 @@ public class EntityIntelligentHuman extends EntityIntelligent implements EntityI
                     this.level.getVibrationManager().callVibrationEvent(new VibrationEvent(this, this.clone(), VibrationType.SWIM));
                 }
             }
-            this.broadcastMovement(false);
+            this.broadcastMovement();
             this.lastX = this.x;
             this.lastY = this.y;
             this.lastZ = this.z;
