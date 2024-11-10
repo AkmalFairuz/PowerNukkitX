@@ -46,9 +46,9 @@ public abstract class BedrockChannelInitializer<T extends BedrockSession> extend
                 .addLast(BedrockBatchDecoder.NAME, BATCH_DECODER)
                 .addLast(BedrockBatchEncoder.NAME, new BedrockBatchEncoder());
 
-        BedrockPacketCodec codec = this.initPacketCodec(channel);
+        this.initPacketCodec(channel);
 
-        channel.pipeline().addLast(BedrockPeer.NAME, this.createPeer(codec, channel));
+        channel.pipeline().addLast(BedrockPeer.NAME, this.createPeer(channel));
 
         this.postInitChannel(channel);
     }
@@ -87,7 +87,7 @@ public abstract class BedrockChannelInitializer<T extends BedrockSession> extend
     protected void postInitChannel(Channel channel) throws Exception {
     }
 
-    protected BedrockPacketCodec initPacketCodec(Channel channel) throws Exception {
+    protected void initPacketCodec(Channel channel) {
         int rakVersion = channel.config().getOption(RakChannelOption.RAK_PROTOCOL_VERSION);
         BedrockPacketCodec codec = switch (rakVersion) {
             case 11, 10, 9 -> // Merged & Varint-ified
@@ -100,11 +100,10 @@ public abstract class BedrockChannelInitializer<T extends BedrockSession> extend
         };
 
         channel.pipeline().addLast(BedrockPacketCodec.NAME, codec);
-        return codec;
     }
 
-    protected BedrockPeer createPeer(BedrockPacketCodec codec, Channel channel) {
-        return new BedrockPeer(channel, codec, this::createSession);
+    protected BedrockPeer createPeer(Channel channel) {
+        return new BedrockPeer(channel, this::createSession);
     }
 
     protected final T createSession(BedrockPeer peer, int subClientId) {

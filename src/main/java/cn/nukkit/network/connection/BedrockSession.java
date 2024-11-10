@@ -73,12 +73,11 @@ public class BedrockSession {
     @Getter
     protected boolean authenticated = false;
     @Getter
-    private final ProtocolContext protocolContext;
+    protected int protocol = ProtocolInfo.CURRENT_PROTOCOL;
 
     public BedrockSession(BedrockPeer peer, int subClientId) {
         this.peer = peer;
         this.subClientId = subClientId;
-        this.protocolContext = ProtocolContext.current();
         // from session start to log in sequence complete, netty threads own the session
         this.setNettyThreadOwned(true);
 
@@ -155,12 +154,9 @@ public class BedrockSession {
         this.setPacketHandler(new SessionStartHandler(this));
     }
 
-    public int getProtocol() {
-        return protocolContext.get();
-    }
-
     public void setProtocol(int protocolVersion) {
-        protocolContext.set(protocolVersion);
+        this.protocol = protocolVersion;
+        this.peer.protocol = protocolVersion;
     }
 
     public void setNettyThreadOwned(boolean immediatelyHandle) {
@@ -211,7 +207,7 @@ public class BedrockSession {
         }
         BedrockPacketCodec bedrockPacketCodec = this.peer.channel.pipeline().get(BedrockPacketCodec.class);
         ByteBuf buf1 = ByteBufAllocator.DEFAULT.ioBuffer(4);
-        BedrockPacketWrapper msg = new BedrockPacketWrapper(pid, this.subClientId, 0, null, null);
+        BedrockPacketWrapper msg = new BedrockPacketWrapper(getProtocol(), pid, this.subClientId, 0, null, null);
         bedrockPacketCodec.encodeHeader(buf1, msg);
         CompositeByteBuf compositeBuf = Unpooled.compositeBuffer();
         compositeBuf.addComponents(true, buf1, buf2);
@@ -249,7 +245,7 @@ public class BedrockSession {
         ByteBufAllocator alloc = this.peer.channel.alloc();
         ByteBuf buf1 = alloc.buffer(16);
         ByteBuf header = alloc.ioBuffer(5);
-        BedrockPacketWrapper msg = new BedrockPacketWrapper(0, subClientId, 0, pk, null);
+        BedrockPacketWrapper msg = new BedrockPacketWrapper(getProtocol(), 0, subClientId, 0, pk, null);
         try {
             BedrockPacketCodec bedrockPacketCodec = this.peer.channel.pipeline().get(BedrockPacketCodec.class);
             DataPacket packet = msg.getPacket();
@@ -521,7 +517,7 @@ public class BedrockSession {
     }
 
     public void syncCraftingData() {
-        this.sendRawPacket(ProtocolInfo.CRAFTING_DATA_PACKET, Registries.RECIPE.getCraftingPacket());
+        this.sendRawPacket(ProtocolInfo.CRAFTING_DATA_PACKET, Registries.RECIPE.getCraftingPacket(getProtocol()));
     }
 
     public void syncCreativeContent() {

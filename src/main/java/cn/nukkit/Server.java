@@ -1988,7 +1988,7 @@ public class Server {
      * @param player 玩家
      */
     public void sendRecipeList(Player player) {
-        player.getSession().sendRawPacket(ProtocolInfo.CRAFTING_DATA_PACKET, Registries.RECIPE.getCraftingPacket());
+        player.getSession().sendRawPacket(ProtocolInfo.CRAFTING_DATA_PACKET, Registries.RECIPE.getCraftingPacket(player.getSession().getProtocol()));
     }
 
     /**

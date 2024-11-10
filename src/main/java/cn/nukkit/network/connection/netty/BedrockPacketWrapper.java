@@ -1,6 +1,7 @@
 package cn.nukkit.network.connection.netty;
 
 import cn.nukkit.network.protocol.DataPacket;
+import cn.nukkit.network.protocol.ProtocolInfo;
 import io.netty.buffer.ByteBuf;
 import io.netty.util.AbstractReferenceCounted;
 import io.netty.util.ReferenceCountUtil;
@@ -14,6 +15,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class BedrockPacketWrapper extends AbstractReferenceCounted {
+    private int protocol = ProtocolInfo.CURRENT_PROTOCOL;
     private int packetId;
     private int senderSubClientId;
     private int targetSubClientId;
@@ -22,6 +24,11 @@ public class BedrockPacketWrapper extends AbstractReferenceCounted {
     private ByteBuf packetBuffer;
 
     public BedrockPacketWrapper(int packetId, int senderSubClientId, int targetSubClientId, DataPacket packet, ByteBuf packetBuffer) {
+        this(ProtocolInfo.CURRENT_PROTOCOL, packetId, senderSubClientId, targetSubClientId, 0, packet, packetBuffer);
+    }
+
+    public BedrockPacketWrapper(int protocol, int packetId, int senderSubClientId, int targetSubClientId, DataPacket packet, ByteBuf packetBuffer) {
+        this.protocol = protocol;
         this.packetId = packetId;
         this.senderSubClientId = senderSubClientId;
         this.targetSubClientId = targetSubClientId;

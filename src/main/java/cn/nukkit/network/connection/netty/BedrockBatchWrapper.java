@@ -51,10 +51,10 @@ public class BedrockBatchWrapper extends AbstractReferenceCounted {
         return batch;
     }
 
-    public static BedrockBatchWrapper create(int subClientId, DataPacket... packets) {
+    public static BedrockBatchWrapper create(int protocol, int subClientId, DataPacket... packets) {
         BedrockBatchWrapper batch = BedrockBatchWrapper.newInstance();
         for (DataPacket packet : packets) {
-            batch.getPackets().add(new BedrockPacketWrapper(0, subClientId, 0, packet, null));
+            batch.getPackets().add(new BedrockPacketWrapper(protocol, 0, subClientId, 0, packet, null));
         }
         return batch;
     }

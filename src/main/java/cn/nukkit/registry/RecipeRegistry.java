@@ -1,11 +1,11 @@
 package cn.nukkit.registry;
 
-import ca.solostudios.strata.parser.tokenizer.Char;
 import cn.nukkit.Server;
 import cn.nukkit.item.Item;
 import cn.nukkit.item.ItemID;
 import cn.nukkit.network.connection.util.HandleByteBuf;
 import cn.nukkit.network.protocol.CraftingDataPacket;
+import cn.nukkit.network.protocol.ProtocolInfo;
 import cn.nukkit.network.protocol.types.RecipeUnlockingRequirement;
 import cn.nukkit.recipe.*;
 import cn.nukkit.recipe.descriptor.DefaultDescriptor;
@@ -24,6 +24,7 @@ import io.netty.util.ReferenceCountUtil;
 import io.netty.util.collection.CharObjectHashMap;
 import io.netty.util.internal.EmptyArrays;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import lombok.SneakyThrows;
@@ -32,7 +33,6 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 
 @Slf4j
 @SuppressWarnings("unchecked")
@@ -52,7 +52,7 @@ public class RecipeRegistry implements IRegistry<String, Recipe, Recipe> {
     /**
      * 缓存着配方数据包
      */
-    private static ByteBuf buffer = null;
+    private static Map<Integer, ByteBuf> buffers = new Int2ObjectOpenHashMap<>();
     private final VanillaRecipeParser vanillaRecipeParser = new VanillaRecipeParser(this);
     private final EnumMap<RecipeType, Int2ObjectArrayMap<Set<Recipe>>> recipeMaps = new EnumMap<>(RecipeType.class);
     private final Object2ObjectOpenHashMap<String, Recipe> allRecipeMaps = new Object2ObjectOpenHashMap<>();
@@ -332,8 +332,8 @@ public class RecipeRegistry implements IRegistry<String, Recipe, Recipe> {
         return null;
     }
 
-    public ByteBuf getCraftingPacket() {
-        return buffer.copy();
+    public ByteBuf getCraftingPacket(int protocol) {
+        return buffers.get(protocol).copy();
     }
 
     public int getRecipeCount() {
@@ -379,9 +379,12 @@ public class RecipeRegistry implements IRegistry<String, Recipe, Recipe> {
         return r.substring(0, r.lastIndexOf("_and_")) + "_" + type.name().toLowerCase(Locale.ENGLISH);
     }
 
-    public static void setCraftingPacket(ByteBuf craftingPacket) {
-        ReferenceCountUtil.safeRelease(buffer);
-        buffer = craftingPacket.retain();
+    public static void setCraftingPacket(int protocol, ByteBuf craftingPacket) {
+        var old = buffers.get(protocol);
+        if(old != null) {
+            ReferenceCountUtil.safeRelease(old);
+        }
+        buffers.put(protocol, craftingPacket.retain());
     }
 
     @Override
@@ -389,7 +392,9 @@ public class RecipeRegistry implements IRegistry<String, Recipe, Recipe> {
         if (isLoad.getAndSet(true)) return;
         log.info("Loading recipes...");
         this.loadRecipes();
-        this.rebuildPacket();
+        for(var protocol : ProtocolInfo.COMPATIBLE_PROTOCOLS){
+            this.rebuildPacket(protocol);
+        }
         log.info("Loaded {} recipes.", getRecipeCount());
     }
 
@@ -407,10 +412,10 @@ public class RecipeRegistry implements IRegistry<String, Recipe, Recipe> {
     public void reload() {
         isLoad.set(false);
         RECIPE_COUNT = 0;
-        if (buffer != null) {
-            buffer.release();
-            buffer = null;
+        for(var buf : buffers.values()) {
+            buf.release();
         }
+        buffers.clear();
         recipeMaps.clear();
         recipeXpMap.clear();
         allRecipeMaps.clear();
@@ -452,11 +457,11 @@ public class RecipeRegistry implements IRegistry<String, Recipe, Recipe> {
         recipeMaps.values().forEach(Map::clear);
         allRecipeMaps.clear();
         RECIPE_COUNT = 0;
-        ReferenceCountUtil.safeRelease(buffer);
-        buffer = null;
+        ReferenceCountUtil.safeRelease(buffers);
+        buffers = null;
     }
 
-    public void rebuildPacket() {
+    public void rebuildPacket(int protocol) {
         ByteBuf buf = ByteBufAllocator.DEFAULT.ioBuffer(64);
         CraftingDataPacket pk = new CraftingDataPacket();
         pk.cleanRecipes = true;
@@ -481,8 +486,8 @@ public class RecipeRegistry implements IRegistry<String, Recipe, Recipe> {
         for (ContainerRecipe recipe : getContainerRecipeMap()) {
             pk.addContainerRecipe(recipe);
         }
-        pk.encode(HandleByteBuf.of(buf));
-        buffer = buf;
+        pk.encode(HandleByteBuf.of(buf, protocol));
+        setCraftingPacket(protocol, buf);
     }
 
     @SneakyThrows

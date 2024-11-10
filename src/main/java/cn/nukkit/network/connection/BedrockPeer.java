@@ -7,10 +7,10 @@ import cn.nukkit.network.connection.netty.codec.compression.CompressionCodec;
 import cn.nukkit.network.connection.netty.codec.compression.CompressionStrategy;
 import cn.nukkit.network.connection.netty.codec.encryption.BedrockEncryptionDecoder;
 import cn.nukkit.network.connection.netty.codec.encryption.BedrockEncryptionEncoder;
-import cn.nukkit.network.connection.netty.codec.packet.BedrockPacketCodec;
 import cn.nukkit.network.connection.netty.initializer.BedrockChannelInitializer;
 import cn.nukkit.network.connection.util.EncryptionUtils;
 import cn.nukkit.network.protocol.DataPacket;
+import cn.nukkit.network.protocol.ProtocolInfo;
 import cn.nukkit.network.protocol.types.PacketCompressionAlgorithm;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
@@ -22,6 +22,8 @@ import io.netty.util.concurrent.ScheduledFuture;
 import io.netty.util.internal.PlatformDependent;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.cloudburstmc.netty.channel.raknet.RakChildChannel;
@@ -51,14 +53,11 @@ public class BedrockPeer extends ChannelInboundHandlerAdapter {
     protected final BedrockSessionFactory sessionFactory;
     protected ScheduledFuture<?> tickFuture;
     protected AtomicBoolean closed = new AtomicBoolean();
-    protected BedrockPacketCodec codec;
-    protected ProtocolContext protocolContext;
+    protected int protocol = ProtocolInfo.CURRENT_PROTOCOL;
 
-    public BedrockPeer(Channel channel, BedrockPacketCodec codec, BedrockSessionFactory sessionFactory) {
+    public BedrockPeer(Channel channel, BedrockSessionFactory sessionFactory) {
         this.channel = channel;
-        this.codec = codec;
         this.sessionFactory = sessionFactory;
-        this.protocolContext = ProtocolContext.current();
     }
 
     protected void onBedrockPacket(BedrockPacketWrapper wrapper) {
@@ -68,10 +67,7 @@ public class BedrockPeer extends ChannelInboundHandlerAdapter {
     }
 
     protected BedrockSession onSessionCreated(int sessionId) {
-        BedrockSession session = this.sessionFactory.createSession(this, sessionId);
-        codec.setProtocolContext(session.getProtocolContext());
-        protocolContext = session.getProtocolContext();
-        return session;
+        return this.sessionFactory.createSession(this, sessionId);
     }
 
     protected void checkForClosed() {
@@ -125,11 +121,11 @@ public class BedrockPeer extends ChannelInboundHandlerAdapter {
      * @param packet         the packet
      */
     public void sendPacket(int senderClientId, int targetClientId, DataPacket packet) {
-        this.packetQueue.add(new BedrockPacketWrapper(0, senderClientId, targetClientId, packet, null));
+        this.packetQueue.add(new BedrockPacketWrapper(protocol,0, senderClientId, targetClientId, packet, null));
     }
 
     public void sendPacketSync(int senderClientId, int targetClientId, DataPacket packet) {
-        this.channel.writeAndFlush(new BedrockPacketWrapper(0, senderClientId, targetClientId, packet, null)).syncUninterruptibly();
+        this.channel.writeAndFlush(new BedrockPacketWrapper(protocol, 0, senderClientId, targetClientId, packet, null)).syncUninterruptibly();
     }
 
     /**
@@ -140,7 +136,7 @@ public class BedrockPeer extends ChannelInboundHandlerAdapter {
      * @param packet         the packet
      */
     public void sendPacketImmediately(int senderClientId, int targetClientId, DataPacket packet) {
-        this.channel.writeAndFlush(new BedrockPacketWrapper(0, senderClientId, targetClientId, packet, null));
+        this.channel.writeAndFlush(new BedrockPacketWrapper(protocol, 0, senderClientId, targetClientId, packet, null));
     }
 
     public void sendRawPacket(BedrockPacketWrapper packet) {
