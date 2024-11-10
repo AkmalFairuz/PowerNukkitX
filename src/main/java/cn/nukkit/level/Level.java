@@ -42,6 +42,7 @@ import cn.nukkit.level.format.LevelProvider;
 import cn.nukkit.level.generator.Generator;
 import cn.nukkit.level.particle.DestroyBlockParticle;
 import cn.nukkit.level.particle.Particle;
+import cn.nukkit.level.particle.ProtocolParticle;
 import cn.nukkit.level.tickingarea.TickingArea;
 import cn.nukkit.level.util.SimpleTickCachedBlockStore;
 import cn.nukkit.level.util.TickCachedBlockStore;
@@ -64,6 +65,7 @@ import cn.nukkit.nbt.tag.Tag;
 import cn.nukkit.network.protocol.*;
 import cn.nukkit.network.protocol.types.PlayerAbility;
 import cn.nukkit.network.protocol.types.SpawnPointType;
+import cn.nukkit.network.translator.ProtocolUtils;
 import cn.nukkit.plugin.InternalPlugin;
 import cn.nukkit.plugin.Plugin;
 import cn.nukkit.registry.Registries;
@@ -724,6 +726,15 @@ public class Level implements Metadatable {
     }
 
     public void addParticle(Particle particle, Player[] players) {
+        if(particle instanceof ProtocolParticle protocolParticle) {
+            if (players == null) {
+                internalSendProtocolParticle(protocolParticle, getChunkPlayers(particle.getFloorX() >> 4, particle.getFloorZ() >> 4).values().stream().toList());
+                return;
+            }
+            internalSendProtocolParticle(protocolParticle, List.of(players));
+            return;
+        }
+
         DataPacket[] packets = particle.encode();
 
         if (players == null) {
@@ -737,6 +748,20 @@ public class Level implements Metadatable {
                 for (var p : packets) {
                     Server.broadcastPacket(players, p);
                 }
+            }
+        }
+    }
+
+    private void internalSendProtocolParticle(ProtocolParticle particle, List<Player> players){
+        var grouped = ProtocolUtils.groupByProtocol(players);
+        for (var entry : grouped.entrySet()) {
+            particle.setProtocol(entry.getKey());
+            DataPacket[] packets = particle.encode();
+            if(packets == null) {
+                continue;
+            }
+            for (DataPacket packet : packets) {
+                Server.broadcastPacket(entry.getValue(), packet);
             }
         }
     }

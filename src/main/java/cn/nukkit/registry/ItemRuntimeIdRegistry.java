@@ -2,6 +2,7 @@ package cn.nukkit.registry;
 
 import cn.nukkit.Server;
 import cn.nukkit.block.BlockID;
+import cn.nukkit.network.translator.ItemTranslator;
 import cn.nukkit.utils.BinaryStream;
 import cn.nukkit.utils.Config;
 import com.google.gson.Gson;
@@ -86,6 +87,8 @@ public class ItemRuntimeIdRegistry implements IRegistry<String, Integer, Integer
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
+        ItemTranslator.init();
     }
 
     @Override

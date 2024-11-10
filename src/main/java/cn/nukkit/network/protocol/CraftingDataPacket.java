@@ -155,7 +155,7 @@ public class CraftingDataPacket extends DataPacket {
                 case FURNACE, SMOKER, BLAST_FURNACE, CAMPFIRE, SOUL_CAMPFIRE -> {
                     SmeltingRecipe smelting = (SmeltingRecipe) recipe;
                     Item input = smelting.getInput().toItem();
-                    byteBuf.writeVarInt(input.getRuntimeId());
+                    byteBuf.writeVarIntItemRuntimeID(input.getRuntimeId());
                     if (recipe.getType().name().endsWith("_DATA")) {
                         byteBuf.writeVarInt(input.getDamage());
                     }
@@ -173,19 +173,19 @@ public class CraftingDataPacket extends DataPacket {
 
         byteBuf.writeUnsignedVarInt(this.brewingEntries.size());
         for (BrewingRecipe recipe : brewingEntries) {
-            byteBuf.writeVarInt(recipe.getInput().getRuntimeId());
+            byteBuf.writeVarIntItemRuntimeID(recipe.getInput().getRuntimeId());
             byteBuf.writeVarInt(recipe.getInput().getDamage());
-            byteBuf.writeVarInt(recipe.getIngredient().getRuntimeId());
+            byteBuf.writeVarIntItemRuntimeID(recipe.getIngredient().getRuntimeId());
             byteBuf.writeVarInt(recipe.getIngredient().getDamage());
-            byteBuf.writeVarInt(recipe.getResult().getRuntimeId());
+            byteBuf.writeVarIntItemRuntimeID(recipe.getResult().getRuntimeId());
             byteBuf.writeVarInt(recipe.getResult().getDamage());
         }
 
         byteBuf.writeUnsignedVarInt(this.containerEntries.size());
         for (ContainerRecipe recipe : containerEntries) {
-            byteBuf.writeVarInt(recipe.getInput().getRuntimeId());
-            byteBuf.writeVarInt(recipe.getIngredient().getRuntimeId());
-            byteBuf.writeVarInt(recipe.getResult().getRuntimeId());
+            byteBuf.writeVarIntItemRuntimeID(recipe.getInput().getRuntimeId());
+            byteBuf.writeVarIntItemRuntimeID(recipe.getIngredient().getRuntimeId());
+            byteBuf.writeVarIntItemRuntimeID(recipe.getResult().getRuntimeId());
         }
 
         byteBuf.writeUnsignedVarInt(0); // Material reducers size

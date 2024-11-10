@@ -10,6 +10,7 @@ import cn.nukkit.level.format.IChunk;
 import cn.nukkit.math.Vector3;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.network.protocol.EntityEventPacket;
+import cn.nukkit.network.translator.ItemTranslator;
 
 import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
@@ -46,11 +47,13 @@ public abstract class EntityAnimal extends EntityIntelligent {
     }
 
     protected void sendBreedingAnimation(Item item) {
-        EntityEventPacket pk = new EntityEventPacket();
-        pk.event = EntityEventPacket.EATING_ITEM;
-        pk.eid = this.getId();
-        pk.data =  item.getFullId();
-        Server.broadcastPacket(this.getViewers().values(), pk);
+        for(Player player : this.getViewers().values()) {
+            EntityEventPacket pk = new EntityEventPacket();
+            pk.event = EntityEventPacket.EATING_ITEM;
+            pk.eid = this.getId();
+            pk.data = ItemTranslator.getInstance().getOldFullId(player.getSession().getProtocol(), item.getFullId());
+            player.dataPacket(pk);
+        }
     }
 
     /**

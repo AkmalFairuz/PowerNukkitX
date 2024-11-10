@@ -26,6 +26,7 @@ import cn.nukkit.network.protocol.types.itemstack.request.ItemStackRequest;
 import cn.nukkit.network.protocol.types.itemstack.request.ItemStackRequestSlotData;
 import cn.nukkit.network.protocol.types.itemstack.request.TextProcessingEventOrigin;
 import cn.nukkit.network.protocol.types.itemstack.request.action.*;
+import cn.nukkit.network.translator.ItemTranslator;
 import cn.nukkit.recipe.descriptor.ComplexAliasDescriptor;
 import cn.nukkit.recipe.descriptor.DefaultDescriptor;
 import cn.nukkit.recipe.descriptor.DeferredDescriptor;
@@ -1222,7 +1223,7 @@ public class HandleByteBuf extends ByteBuf {
             return;
         }
 
-        int networkId = item.getRuntimeId();
+        int networkId = ItemTranslator.getInstance().getOldId(protocol, item.getRuntimeId());
         writeVarInt(networkId);//write item runtimeId
         writeShortLE(item.getCount());//write item count
         writeUnsignedVarInt(item.getDamage());//write damage value
@@ -1328,7 +1329,7 @@ public class HandleByteBuf extends ByteBuf {
                     this.writeVarInt(0); // item == null ? 0 : item.getCount()
                     return;
                 }
-                int networkId = ingredient.getRuntimeId();
+                int networkId = ItemTranslator.getInstance().getOldId(protocol, ingredient.getRuntimeId());
                 int damage = ingredient.hasMeta() ? ingredient.getDamage() : 0x7fff;
                 this.writeShortLE(networkId);
                 this.writeShortLE(damage);
@@ -1651,6 +1652,10 @@ public class HandleByteBuf extends ByteBuf {
                 readVarInt(),
                 containerName
         );
+    }
+
+    public void writeVarIntItemRuntimeID(int runtimeId) {
+        this.writeVarInt(ItemTranslator.getInstance().getOldId(protocol, runtimeId));
     }
 
 

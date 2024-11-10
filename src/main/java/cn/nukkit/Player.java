@@ -108,6 +108,7 @@ import cn.nukkit.network.protocol.types.GameType;
 import cn.nukkit.network.protocol.types.PlayerBlockActionData;
 import cn.nukkit.network.protocol.types.PlayerInfo;
 import cn.nukkit.network.protocol.types.SpawnPointType;
+import cn.nukkit.network.translator.ItemTranslator;
 import cn.nukkit.permission.PermissibleBase;
 import cn.nukkit.permission.Permission;
 import cn.nukkit.permission.PermissionAttachment;
@@ -5258,7 +5259,7 @@ public class Player extends EntityHuman implements CommandSender, ChunkLoader, I
 
     public void completeUsingItem(int itemId, int action) {
         CompletedUsingItemPacket pk = new CompletedUsingItemPacket();
-        pk.itemId = itemId;
+        pk.itemId = ItemTranslator.getInstance().getOldId(session.getProtocol(), itemId);
         pk.action = action;
         this.dataPacket(pk);
     }
