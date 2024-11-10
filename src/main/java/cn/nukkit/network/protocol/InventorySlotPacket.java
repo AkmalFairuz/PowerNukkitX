@@ -33,7 +33,11 @@ public class InventorySlotPacket extends DataPacket {
         this.inventoryId = byteBuf.readUnsignedVarInt();
         this.slot = byteBuf.readUnsignedVarInt();
         this.fullContainerName = byteBuf.readFullContainerName();
-        this.storageItem = byteBuf.readSlot();
+        if(byteBuf.protocol >= ProtocolInfo.PROTOCOL_748) {
+            this.storageItem = byteBuf.readSlot();
+        }else{
+            byteBuf.readUnsignedVarInt(); // dynamic container size
+        }
         this.item = byteBuf.readSlot();
     }
 
@@ -42,7 +46,11 @@ public class InventorySlotPacket extends DataPacket {
         byteBuf.writeUnsignedVarInt(this.inventoryId);
         byteBuf.writeUnsignedVarInt(this.slot);
         byteBuf.writeFullContainerName(this.fullContainerName);
-        byteBuf.writeSlot(this.storageItem);
+        if(byteBuf.protocol >= ProtocolInfo.PROTOCOL_748) {
+            byteBuf.writeSlot(this.storageItem);
+        }else{
+            byteBuf.writeUnsignedVarInt(0); // dynamic container size
+        }
         byteBuf.writeSlot(this.item);
     }
 

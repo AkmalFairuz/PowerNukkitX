@@ -40,6 +40,20 @@ public class ResourcePacksInfoPacket extends DataPacket {
         byteBuf.writeBoolean(this.hasAddonPacks);
         byteBuf.writeBoolean(this.scripting);
         this.encodePacks(byteBuf, this.resourcePackEntries, false);
+
+        if(byteBuf.protocol < ProtocolInfo.PROTOCOL_748) {
+            List<ResourcePack> cdnPacks = new ObjectArrayList<>();
+            for (ResourcePack entry : this.resourcePackEntries) {
+                if (!entry.cdnUrl().isEmpty()) {
+                    cdnPacks.add(entry);
+                }
+            }
+            byteBuf.writeUnsignedVarInt(cdnPacks.size());
+            for(ResourcePack cdnPack : cdnPacks){
+                byteBuf.writeString(cdnPack.getPackId().toString());
+                byteBuf.writeString(cdnPack.cdnUrl());
+            }
+        }
     }
 
     private void encodePacks(HandleByteBuf byteBuf, ResourcePack[] packs, boolean behaviour) {
@@ -53,7 +67,9 @@ public class ResourcePacksInfoPacket extends DataPacket {
             byteBuf.writeString(!entry.getEncryptionKey().isEmpty() ? entry.getPackId().toString() : ""); // content identity
             byteBuf.writeBoolean(false); // scripting
             byteBuf.writeBoolean(false);    // isAddonPack
-            byteBuf.writeString(entry.cdnUrl());    // cdnUrl
+            if(byteBuf.protocol >= ProtocolInfo.PROTOCOL_748) {
+                byteBuf.writeString(entry.cdnUrl());    // cdnUrl
+            }
             if (!behaviour) {
                 byteBuf.writeBoolean(false); // raytracing capable
             }

@@ -38,7 +38,11 @@ public class InventoryContentPacket extends DataPacket {
             byteBuf.writeSlot(slot);
         }
         byteBuf.writeFullContainerName(this.fullContainerName);
-        byteBuf.writeSlot(this.storageItem);
+        if(byteBuf.protocol >= ProtocolInfo.PROTOCOL_729) {
+            byteBuf.writeSlot(this.storageItem);
+        }else{
+            byteBuf.writeUnsignedVarInt(0); // dynamic container size
+        }
     }
 
     public void handle(PacketHandler handler) {

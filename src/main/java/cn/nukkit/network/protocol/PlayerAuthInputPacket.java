@@ -81,7 +81,12 @@ public class PlayerAuthInputPacket extends DataPacket {
         this.playMode = ClientPlayMode.fromOrdinal(byteBuf.readUnsignedVarInt());
         this.interactionModel = AuthInteractionModel.fromOrdinal(byteBuf.readUnsignedVarInt());
 
-        this.interactRotation = byteBuf.readVector2f();
+        if(byteBuf.protocol >= ProtocolInfo.PROTOCOL_748) {
+            this.interactRotation = byteBuf.readVector2f();
+        }else{
+            byteBuf.readVector3f(); // vr gaze direction
+            this.interactRotation = new Vector2f(0, 0);
+        }
 
         this.tick = byteBuf.readUnsignedVarLong();
         this.delta = byteBuf.readVector3f();
@@ -116,7 +121,11 @@ public class PlayerAuthInputPacket extends DataPacket {
         // since 1.19.70-r1, v575
         this.analogMoveVector = byteBuf.readVector2f();
 
-        this.cameraOrientation = byteBuf.readVector3f();
+        if(byteBuf.protocol >= ProtocolInfo.PROTOCOL_748) {
+            this.cameraOrientation = byteBuf.readVector3f();
+        }else{
+            this.cameraOrientation = new Vector3f(0, 0, 0);
+        }
     }
 
     @Override

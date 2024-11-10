@@ -22,14 +22,22 @@ public class UpdatePlayerGameTypePacket extends DataPacket {
     public void decode(HandleByteBuf byteBuf) {
         this.gameType = GameType.from(byteBuf.readVarInt());
         this.entityId = byteBuf.readVarLong();
-        this.tick = byteBuf.readUnsignedVarLong();
+        if(byteBuf.protocol >= ProtocolInfo.PROTOCOL_748) {
+            this.tick = byteBuf.readUnsignedVarLong();
+        }else{
+            this.tick = byteBuf.readUnsignedVarInt();
+        }
     }
 
     @Override
     public void encode(HandleByteBuf byteBuf) {
         byteBuf.writeVarInt(this.gameType.ordinal());
         byteBuf.writeVarLong(entityId);
-        byteBuf.writeUnsignedVarLong(tick);
+        if(byteBuf.protocol >= ProtocolInfo.PROTOCOL_748) {
+            byteBuf.writeUnsignedVarLong(tick);
+        }else{
+            byteBuf.writeUnsignedVarInt((int) tick);
+        }
     }
 
     public void handle(PacketHandler handler) {
