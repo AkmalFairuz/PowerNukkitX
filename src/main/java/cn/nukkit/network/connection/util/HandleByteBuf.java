@@ -18,6 +18,7 @@ import cn.nukkit.nbt.stream.LittleEndianByteBufInputStreamNBTInputStream;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.nbt.tag.ListTag;
 import cn.nukkit.nbt.tag.StringTag;
+import cn.nukkit.network.protocol.ProtocolInfo;
 import cn.nukkit.network.protocol.types.EntityLink;
 import cn.nukkit.network.protocol.types.inventory.FullContainerName;
 import cn.nukkit.network.protocol.types.itemstack.ContainerSlotType;
@@ -74,13 +75,19 @@ import java.util.function.ToLongFunction;
 
 public class HandleByteBuf extends ByteBuf {
     protected final ByteBuf buf;
+    public int protocol;
 
     public static HandleByteBuf of(ByteBuf buf) {
-        return new HandleByteBuf(buf);
+        return new HandleByteBuf(buf, ProtocolInfo.CURRENT_PROTOCOL);
     }
 
-    protected HandleByteBuf(ByteBuf buf) {
+    public static HandleByteBuf of(ByteBuf buf, int protocol) {
+        return new HandleByteBuf(buf, protocol);
+    }
+
+    protected HandleByteBuf(ByteBuf buf, int protocol) {
         this.buf = ObjectUtil.checkNotNull(buf, "buf");
+        this.protocol = protocol;
     }
 
     @Override

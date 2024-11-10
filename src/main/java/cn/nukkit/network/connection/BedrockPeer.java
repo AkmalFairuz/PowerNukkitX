@@ -7,11 +7,10 @@ import cn.nukkit.network.connection.netty.codec.compression.CompressionCodec;
 import cn.nukkit.network.connection.netty.codec.compression.CompressionStrategy;
 import cn.nukkit.network.connection.netty.codec.encryption.BedrockEncryptionDecoder;
 import cn.nukkit.network.connection.netty.codec.encryption.BedrockEncryptionEncoder;
+import cn.nukkit.network.connection.netty.codec.packet.BedrockPacketCodec;
 import cn.nukkit.network.connection.netty.initializer.BedrockChannelInitializer;
 import cn.nukkit.network.connection.util.EncryptionUtils;
 import cn.nukkit.network.protocol.DataPacket;
-import cn.nukkit.network.protocol.ProtocolInfo;
-import cn.nukkit.network.protocol.UpdateAbilitiesPacket;
 import cn.nukkit.network.protocol.types.PacketCompressionAlgorithm;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
@@ -52,10 +51,14 @@ public class BedrockPeer extends ChannelInboundHandlerAdapter {
     protected final BedrockSessionFactory sessionFactory;
     protected ScheduledFuture<?> tickFuture;
     protected AtomicBoolean closed = new AtomicBoolean();
+    protected BedrockPacketCodec codec;
+    protected ProtocolContext protocolContext;
 
-    public BedrockPeer(Channel channel, BedrockSessionFactory sessionFactory) {
+    public BedrockPeer(Channel channel, BedrockPacketCodec codec, BedrockSessionFactory sessionFactory) {
         this.channel = channel;
+        this.codec = codec;
         this.sessionFactory = sessionFactory;
+        this.protocolContext = ProtocolContext.current();
     }
 
     protected void onBedrockPacket(BedrockPacketWrapper wrapper) {
@@ -65,7 +68,10 @@ public class BedrockPeer extends ChannelInboundHandlerAdapter {
     }
 
     protected BedrockSession onSessionCreated(int sessionId) {
-        return this.sessionFactory.createSession(this, sessionId);
+        BedrockSession session = this.sessionFactory.createSession(this, sessionId);
+        codec.setProtocolContext(session.getProtocolContext());
+        protocolContext = session.getProtocolContext();
+        return session;
     }
 
     protected void checkForClosed() {
@@ -156,13 +162,10 @@ public class BedrockPeer extends ChannelInboundHandlerAdapter {
             throw new IllegalStateException("Encryption is already enabled");
         }
 
-        int protocolVersion = ProtocolInfo.CURRENT_PROTOCOL;
-        boolean useCtr = protocolVersion >= 428;
-
         this.channel.pipeline().addAfter(FrameIdCodec.NAME, BedrockEncryptionEncoder.NAME,
-                new BedrockEncryptionEncoder(secretKey, EncryptionUtils.createCipher(useCtr, true, secretKey)));
+                new BedrockEncryptionEncoder(secretKey, EncryptionUtils.createCipher(true, true, secretKey)));
         this.channel.pipeline().addAfter(FrameIdCodec.NAME, BedrockEncryptionDecoder.NAME,
-                new BedrockEncryptionDecoder(secretKey, EncryptionUtils.createCipher(useCtr, false, secretKey)));
+                new BedrockEncryptionDecoder(secretKey, EncryptionUtils.createCipher(true, false, secretKey)));
 
         log.debug("Encryption enabled for {}", getSocketAddress());
     }
@@ -175,7 +178,7 @@ public class BedrockPeer extends ChannelInboundHandlerAdapter {
     public void setCompression(CompressionStrategy strategy) {
         Objects.requireNonNull(strategy, "strategy");
 
-        boolean needsPrefix = ProtocolInfo.CURRENT_PROTOCOL >= 649; // TODO: do not hardcode
+        boolean needsPrefix = protocolContext.get() >= 649; // TODO: do not hardcode
 
         ChannelHandler handler = this.channel.pipeline().get(CompressionCodec.NAME);
         if (handler == null) {

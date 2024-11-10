@@ -13,6 +13,10 @@ public interface ProtocolInfo {
      */
     int CURRENT_PROTOCOL = dynamic(748);
 
+    int[] COMPATIBLE_PROTOCOLS = new int[]{
+            CURRENT_PROTOCOL
+    };
+
     String MINECRAFT_VERSION_NETWORK = dynamic("1.21.40");
 
     SemVersion MINECRAFT_SEMVERSION = new SemVersion(1, 21, 4, 0, 0);

@@ -46,9 +46,9 @@ public abstract class BedrockChannelInitializer<T extends BedrockSession> extend
                 .addLast(BedrockBatchDecoder.NAME, BATCH_DECODER)
                 .addLast(BedrockBatchEncoder.NAME, new BedrockBatchEncoder());
 
-        this.initPacketCodec(channel);
+        BedrockPacketCodec codec = this.initPacketCodec(channel);
 
-        channel.pipeline().addLast(BedrockPeer.NAME, this.createPeer(channel));
+        channel.pipeline().addLast(BedrockPeer.NAME, this.createPeer(codec, channel));
 
         this.postInitChannel(channel);
     }
@@ -87,28 +87,24 @@ public abstract class BedrockChannelInitializer<T extends BedrockSession> extend
     protected void postInitChannel(Channel channel) throws Exception {
     }
 
-    protected void initPacketCodec(Channel channel) throws Exception {
+    protected BedrockPacketCodec initPacketCodec(Channel channel) throws Exception {
         int rakVersion = channel.config().getOption(RakChannelOption.RAK_PROTOCOL_VERSION);
+        BedrockPacketCodec codec = switch (rakVersion) {
+            case 11, 10, 9 -> // Merged & Varint-ified
+                    new BedrockPacketCodec_v3();
+            case 8 -> // Split-screen support
+                    new BedrockPacketCodec_v2();
+            case 7 -> // Single byte packet ID
+                    new BedrockPacketCodec_v1();
+            default -> throw new UnsupportedOperationException("Unsupported RakNet protocol version: " + rakVersion);
+        };
 
-        switch (rakVersion) {
-            case 11:
-            case 10:
-            case 9: // Merged & Varint-ified
-                channel.pipeline().addLast(BedrockPacketCodec.NAME, new BedrockPacketCodec_v3());
-                break;
-            case 8: // Split-screen support
-                channel.pipeline().addLast(BedrockPacketCodec.NAME, new BedrockPacketCodec_v2());
-                break;
-            case 7: // Single byte packet ID
-                channel.pipeline().addLast(BedrockPacketCodec.NAME, new BedrockPacketCodec_v1());
-                break;
-            default:
-                throw new UnsupportedOperationException("Unsupported RakNet protocol version: " + rakVersion);
-        }
+        channel.pipeline().addLast(BedrockPacketCodec.NAME, codec);
+        return codec;
     }
 
-    protected BedrockPeer createPeer(Channel channel) {
-        return new BedrockPeer(channel, this::createSession);
+    protected BedrockPeer createPeer(BedrockPacketCodec codec, Channel channel) {
+        return new BedrockPeer(channel, codec, this::createSession);
     }
 
     protected final T createSession(BedrockPeer peer, int subClientId) {

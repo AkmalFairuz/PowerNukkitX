@@ -17,12 +17,13 @@ public class SessionStartHandler extends BedrockSessionPacketHandler {
     @Override
     public void handle(RequestNetworkSettingsPacket pk) {
         int protocol = pk.protocolVersion;
-        if (protocol != ProtocolInfo.CURRENT_PROTOCOL) {
+        if (!isCompatibleProtocol(protocol)) {
             session.sendPlayStatus(protocol < ProtocolInfo.CURRENT_PROTOCOL ? PlayStatusPacket.LOGIN_FAILED_CLIENT : PlayStatusPacket.LOGIN_FAILED_SERVER, true);
             var message = protocol < ProtocolInfo.CURRENT_PROTOCOL ? "disconnectionScreen.outdatedClient" : "disconnectionScreen.outdatedServer";
             session.close(message);
             return;
         }
+        session.setProtocol(protocol);
 
         var server = session.getServer();
         if (server.getIPBans().isBanned(session.getAddressString())) {
@@ -46,5 +47,14 @@ public class SessionStartHandler extends BedrockSessionPacketHandler {
         session.sendNetworkSettingsPacket(settingsPacket);
         session.setCompression(algorithm);//so send the NetworkSettingsPacket packet before set the session compression
         this.session.getMachine().fire(SessionState.LOGIN);
+    }
+
+    private boolean isCompatibleProtocol(int protocol) {
+        for (int compatibleProtocol : ProtocolInfo.COMPATIBLE_PROTOCOLS) {
+            if (protocol == compatibleProtocol) {
+                return true;
+            }
+        }
+        return false;
     }
 }

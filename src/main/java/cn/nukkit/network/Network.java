@@ -6,6 +6,7 @@ import cn.nukkit.config.ServerPropertiesKeys;
 import cn.nukkit.network.connection.BedrockPeer;
 import cn.nukkit.network.connection.BedrockPong;
 import cn.nukkit.network.connection.BedrockSession;
+import cn.nukkit.network.connection.netty.codec.packet.BedrockPacketCodec;
 import cn.nukkit.network.connection.netty.initializer.BedrockServerInitializer;
 import cn.nukkit.network.protocol.ProtocolInfo;
 import cn.nukkit.network.query.codec.QueryPacketCodec;
@@ -117,8 +118,8 @@ public class Network {
                     }
 
                     @Override
-                    protected BedrockPeer createPeer(Channel channel) {
-                        return super.createPeer(channel);
+                    protected BedrockPeer createPeer(BedrockPacketCodec codec, Channel channel) {
+                        return super.createPeer(codec, channel);
                     }
 
                     @Override

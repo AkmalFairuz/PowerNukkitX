@@ -1,5 +1,6 @@
 package cn.nukkit.network.connection.netty.codec.packet;
 
+import cn.nukkit.network.connection.ProtocolContext;
 import cn.nukkit.network.connection.netty.BedrockPacketWrapper;
 import cn.nukkit.network.connection.util.HandleByteBuf;
 import cn.nukkit.network.protocol.DataPacket;
@@ -10,6 +11,8 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageCodec;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.Arrays;
 import java.util.List;
@@ -18,6 +21,9 @@ public abstract class BedrockPacketCodec extends MessageToMessageCodec<ByteBuf, 
 
     public static final String NAME = "bedrock-packet-codec";
     private static final InternalLogger log = InternalLoggerFactory.getInstance(BedrockPacketCodec.class);
+    @Setter
+    @Getter
+    private ProtocolContext protocolContext;
 
     @Override
     protected final void encode(ChannelHandlerContext ctx, BedrockPacketWrapper msg, List<Object> out) throws Exception {
@@ -30,7 +36,11 @@ public abstract class BedrockPacketCodec extends MessageToMessageCodec<ByteBuf, 
                 DataPacket packet = msg.getPacket();
                 msg.setPacketId(packet.pid());
                 encodeHeader(buf, msg);
-                packet.encode(HandleByteBuf.of(buf));
+                if(protocolContext != null) {
+                    packet.encode(HandleByteBuf.of(buf, this.protocolContext.get()));
+                }else{
+                    packet.encode(HandleByteBuf.of(buf));
+                }
                 msg.setPacketBuffer(buf.retain());
                 out.add(msg.retain());
             } catch (Throwable t) {
@@ -54,7 +64,11 @@ public abstract class BedrockPacketCodec extends MessageToMessageCodec<ByteBuf, 
                 log.info("Failed to decode packet for packetId {}", wrapper.getPacketId());
                 return;
             }
-            dataPacket.decode(HandleByteBuf.of(msg));
+            if(protocolContext != null) {
+                dataPacket.decode(HandleByteBuf.of(msg, this.protocolContext.get()));
+            }else{
+                dataPacket.decode(HandleByteBuf.of(msg));
+            }
             wrapper.setPacket(dataPacket);
             out.add(wrapper.retain());
         } catch (Throwable t) {

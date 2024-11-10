@@ -72,11 +72,13 @@ public class BedrockSession {
     private InetSocketAddress address;
     @Getter
     protected boolean authenticated = false;
-
+    @Getter
+    private final ProtocolContext protocolContext;
 
     public BedrockSession(BedrockPeer peer, int subClientId) {
         this.peer = peer;
         this.subClientId = subClientId;
+        this.protocolContext = ProtocolContext.current();
         // from session start to log in sequence complete, netty threads own the session
         this.setNettyThreadOwned(true);
 
@@ -151,6 +153,14 @@ public class BedrockSession {
 
         machine = new StateMachine<>(SessionState.START, cfg);
         this.setPacketHandler(new SessionStartHandler(this));
+    }
+
+    public int getProtocol() {
+        return protocolContext.get();
+    }
+
+    public void setProtocol(int protocolVersion) {
+        protocolContext.set(protocolVersion);
     }
 
     public void setNettyThreadOwned(boolean immediatelyHandle) {
@@ -245,7 +255,7 @@ public class BedrockSession {
             DataPacket packet = msg.getPacket();
             msg.setPacketId(packet.pid());
             bedrockPacketCodec.encodeHeader(buf1, msg);
-            packet.encode(HandleByteBuf.of(buf1));
+            packet.encode(HandleByteBuf.of(buf1, this.getProtocol()));
 
             BedrockBatchWrapper batch = BedrockBatchWrapper.newInstance();
             CompositeByteBuf buf2 = alloc.compositeDirectBuffer(2);
