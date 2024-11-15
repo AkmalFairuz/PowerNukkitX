@@ -32,7 +32,9 @@ public class EmotePacket extends DataPacket {
     public void decode(HandleByteBuf byteBuf) {
         this.runtimeId = byteBuf.readEntityRuntimeId();
         this.emoteID = byteBuf.readString();
-        this.emoteDuration = byteBuf.readUnsignedVarInt();
+        if(byteBuf.protocol >= ProtocolInfo.PROTOCOL_729) {
+            this.emoteDuration = byteBuf.readUnsignedVarInt();
+        }
         this.xuid = byteBuf.readString();
         this.platformId = byteBuf.readString();
         this.flags = byteBuf.readByte();
@@ -42,7 +44,9 @@ public class EmotePacket extends DataPacket {
     public void encode(HandleByteBuf byteBuf) {
         byteBuf.writeEntityRuntimeId(this.runtimeId);
         byteBuf.writeString(this.emoteID);
-        byteBuf.writeUnsignedVarInt(this.emoteDuration);
+        if(byteBuf.protocol >= ProtocolInfo.PROTOCOL_729) {
+            byteBuf.writeUnsignedVarInt(this.emoteDuration);
+        }
         byteBuf.writeString(this.xuid);
         byteBuf.writeString(this.platformId);
         byteBuf.writeByte(flags);

@@ -3,6 +3,7 @@ package cn.nukkit.network.protocol;
 import cn.nukkit.utils.SemVersion;
 
 import java.util.List;
+import java.util.Map;
 
 import static cn.nukkit.utils.Utils.dynamic;
 
@@ -16,10 +17,28 @@ public interface ProtocolInfo {
     int PROTOCOL_748 = dynamic(748); // 1.21.40
     int CURRENT_PROTOCOL = PROTOCOL_748;
     int PROTOCOL_729 = dynamic(729); // 1.21.30
+    int PROTOCOL_712 = dynamic(712); // 1.21.20
+    int PROTOCOL_686 = dynamic(686); // 1.21.2
+    int PROTOCOL_685 = dynamic(685); // 1.21.0
 
     List<Integer> COMPATIBLE_PROTOCOLS = List.of(
             CURRENT_PROTOCOL,
-            PROTOCOL_729
+            PROTOCOL_729,
+            PROTOCOL_712,
+            PROTOCOL_686
+    );
+
+    Map<Integer, Integer> BACKWARD_COMPATIBLE_PROTOCOLS = Map.ofEntries(
+            // 1.21.0 and 1.21.2 is backward compatible.
+            Map.entry(PROTOCOL_685, PROTOCOL_686)
+    );
+
+    Map<Integer, String> MINECRAFT_VERSIONS = Map.ofEntries(
+            Map.entry(PROTOCOL_748, dynamic("1.21.40")),
+            Map.entry(PROTOCOL_729, dynamic("1.21.30")),
+            Map.entry(PROTOCOL_712, dynamic("1.21.20")),
+            Map.entry(PROTOCOL_686, dynamic("1.21.2")),
+            Map.entry(PROTOCOL_685, dynamic("1.21.0"))
     );
 
     String MINECRAFT_VERSION_NETWORK = dynamic("1.21.40");

@@ -34,7 +34,9 @@ public class MobArmorEquipmentPacket extends DataPacket {
         this.slots[1] = byteBuf.readSlot();
         this.slots[2] = byteBuf.readSlot();
         this.slots[3] = byteBuf.readSlot();
-        this.body = byteBuf.readSlot();
+        if(byteBuf.protocol >= ProtocolInfo.PROTOCOL_712) {
+            this.body = byteBuf.readSlot();
+        }
     }
 
     @Override
@@ -45,7 +47,9 @@ public class MobArmorEquipmentPacket extends DataPacket {
         byteBuf.writeSlot(this.slots[1]);
         byteBuf.writeSlot(this.slots[2]);
         byteBuf.writeSlot(this.slots[3]);
-        byteBuf.writeSlot(this.body);
+        if(byteBuf.protocol >= ProtocolInfo.PROTOCOL_712) {
+            byteBuf.writeSlot(this.body);
+        }
     }
 
     public void handle(PacketHandler handler) {

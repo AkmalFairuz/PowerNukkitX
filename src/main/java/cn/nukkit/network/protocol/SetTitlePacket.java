@@ -47,7 +47,9 @@ public class SetTitlePacket extends DataPacket {
         this.fadeOutTime = byteBuf.readVarInt();
         this.xuid = byteBuf.readString();
         this.platformOnlineId = byteBuf.readString();
-        this.filteredTitleText = byteBuf.readString();
+        if(byteBuf.protocol >= ProtocolInfo.PROTOCOL_712) {
+            this.filteredTitleText = byteBuf.readString();
+        }
     }
 
     @Override
@@ -59,7 +61,9 @@ public class SetTitlePacket extends DataPacket {
         byteBuf.writeVarInt(fadeOutTime);
         byteBuf.writeString(xuid);
         byteBuf.writeString(platformOnlineId);
-        byteBuf.writeString(this.filteredTitleText);
+        if(byteBuf.protocol >= ProtocolInfo.PROTOCOL_712) {
+            byteBuf.writeString(this.filteredTitleText);
+        }
     }
 
     @NotNull

@@ -39,6 +39,10 @@ public class ResourcePacksInfoPacket extends DataPacket {
         byteBuf.writeBoolean(this.mustAccept);
         byteBuf.writeBoolean(this.hasAddonPacks);
         byteBuf.writeBoolean(this.scripting);
+        if(byteBuf.protocol < ProtocolInfo.PROTOCOL_729) {
+            byteBuf.writeBoolean(false); // force server packs
+            byteBuf.writeShortLE(0); // behavior packs count, assume empty
+        }
         this.encodePacks(byteBuf, this.resourcePackEntries, false);
 
         if(byteBuf.protocol < ProtocolInfo.PROTOCOL_748) {

@@ -29,18 +29,23 @@ public class DisconnectPacket extends DataPacket {
     public void decode(HandleByteBuf byteBuf) {
         this.reason = DisconnectFailReason.values()[byteBuf.readVarInt()];
         this.hideDisconnectionScreen = byteBuf.readBoolean();
-        this.message = byteBuf.readString();
-        this.filteredMessage=byteBuf.readString();
+        if(!this.hideDisconnectionScreen) {
+            this.message = byteBuf.readString();
+            if(byteBuf.protocol >= ProtocolInfo.PROTOCOL_712) {
+                this.filteredMessage = byteBuf.readString();
+            }
+        }
     }
 
     @Override
     public void encode(HandleByteBuf byteBuf) {
-
         byteBuf.writeVarInt(this.reason.ordinal());
         byteBuf.writeBoolean(this.hideDisconnectionScreen);
         if (!this.hideDisconnectionScreen) {
             byteBuf.writeString(this.message);
-            byteBuf.writeString(this.filteredMessage);
+            if(byteBuf.protocol >= ProtocolInfo.PROTOCOL_712) {
+                byteBuf.writeString(this.filteredMessage);
+            }
         }
     }
 

@@ -26,7 +26,11 @@ public class PlayerArmorDamagePacket extends DataPacket {
         for (int i = 0; i < 5; i++) {
             if ((flagsval & (1 << i)) != 0) {
                 this.flags.add(PlayerArmorDamageFlag.values()[i]);
-                this.damage[i] = byteBuf.readVarInt();
+                if(i == PlayerArmorDamageFlag.BODY.ordinal() && byteBuf.protocol >= ProtocolInfo.PROTOCOL_712) {
+                    this.damage[i] = byteBuf.readVarInt();
+                }else{
+                    this.damage[i] = 0;
+                }
             }
         }
     }
@@ -40,6 +44,9 @@ public class PlayerArmorDamagePacket extends DataPacket {
         byteBuf.writeByte(outflags);
 
         for (PlayerArmorDamageFlag flag : this.flags) {
+            if(flag == PlayerArmorDamageFlag.BODY && byteBuf.protocol < ProtocolInfo.PROTOCOL_712) {
+                continue;
+            }
             byteBuf.writeVarInt(this.damage[flag.ordinal()]);
         }
     }

@@ -17,14 +17,18 @@ public class TransferPacket extends DataPacket {
     public void decode(HandleByteBuf byteBuf) {
         this.address = byteBuf.readString();
         this.port = byteBuf.readShortLE();
-        this.reloadWorld = byteBuf.readBoolean();
+        if(byteBuf.protocol >= ProtocolInfo.PROTOCOL_729) {
+            this.reloadWorld = byteBuf.readBoolean();
+        }
     }
 
     @Override
     public void encode(HandleByteBuf byteBuf) {
         byteBuf.writeString(address);
         byteBuf.writeShortLE(port);
-        byteBuf.writeBoolean(this.reloadWorld);
+        if(byteBuf.protocol >= ProtocolInfo.PROTOCOL_729) {
+            byteBuf.writeBoolean(this.reloadWorld);
+        }
     }
 
     @Override

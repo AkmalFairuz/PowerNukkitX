@@ -36,7 +36,9 @@ public class SetEntityLinkPacket extends DataPacket {
         byteBuf.writeByte((byte) this.type.ordinal());
         byteBuf.writeByte(this.immediate);
         byteBuf.writeBoolean(this.riderInitiated);
-        byteBuf.writeFloatLE(this.vehicleAngularVelocity);
+        if(byteBuf.protocol >= ProtocolInfo.PROTOCOL_712) {
+            byteBuf.writeFloatLE(this.vehicleAngularVelocity);
+        }
     }
 
     @Override

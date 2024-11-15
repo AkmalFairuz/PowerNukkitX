@@ -24,7 +24,9 @@ public class StopSoundPacket extends DataPacket {
     public void encode(HandleByteBuf byteBuf) {
         byteBuf.writeString(this.name);
         byteBuf.writeBoolean(this.stopAll);
-        byteBuf.writeBoolean(this.stopMusicLegacy);
+        if(byteBuf.protocol >= ProtocolInfo.PROTOCOL_712) {
+            byteBuf.writeBoolean(this.stopMusicLegacy);
+        }
     }
 
     public void handle(PacketHandler handler) {

@@ -39,16 +39,22 @@ public class CameraPresetsPacket extends DataPacket {
         byteBuf.writeNotNull(preset.getPos(), (v) -> byteBuf.writeFloatLE(v.getZ()));
         byteBuf.writeNotNull(preset.getPitch(), byteBuf::writeFloatLE);
         byteBuf.writeNotNull(preset.getYaw(), byteBuf::writeFloatLE);
-        byteBuf.writeNotNull(preset.getRotationSpeed(), byteBuf::writeFloatLE);
-        byteBuf.writeOptional(preset.getSnapToTarget(), byteBuf::writeBoolean);
-        if(byteBuf.protocol >= ProtocolInfo.PROTOCOL_748) {
-            byteBuf.writeNotNull(preset.getHorizontalRotationLimit(), byteBuf::writeVector2f);
-            byteBuf.writeNotNull(preset.getVerticalRotationLimit(), byteBuf::writeVector2f);
-            byteBuf.writeOptional(preset.getContinueTargeting(), byteBuf::writeBoolean);
+        if(byteBuf.protocol >= ProtocolInfo.PROTOCOL_712) {
+            if(byteBuf.protocol >= ProtocolInfo.PROTOCOL_729) {
+                byteBuf.writeNotNull(preset.getRotationSpeed(), byteBuf::writeFloatLE);
+                byteBuf.writeOptional(preset.getSnapToTarget(), byteBuf::writeBoolean);
+                if (byteBuf.protocol >= ProtocolInfo.PROTOCOL_748) {
+                    byteBuf.writeNotNull(preset.getHorizontalRotationLimit(), byteBuf::writeVector2f);
+                    byteBuf.writeNotNull(preset.getVerticalRotationLimit(), byteBuf::writeVector2f);
+                    byteBuf.writeOptional(preset.getContinueTargeting(), byteBuf::writeBoolean);
+                }
+            }
+            byteBuf.writeNotNull(preset.getViewOffset(), byteBuf::writeVector2f);
+            if (byteBuf.protocol >= ProtocolInfo.PROTOCOL_729) {
+                byteBuf.writeNotNull(preset.getEntityOffset(), byteBuf::writeVector3f);
+            }
+            byteBuf.writeNotNull(preset.getRadius(), byteBuf::writeFloatLE);
         }
-        byteBuf.writeNotNull(preset.getViewOffset(), byteBuf::writeVector2f);
-        byteBuf.writeNotNull(preset.getEntityOffset(), byteBuf::writeVector3f);
-        byteBuf.writeNotNull(preset.getRadius(), byteBuf::writeFloatLE);
         byteBuf.writeNotNull(preset.getListener(), (l) -> byteBuf.writeByte((byte) l.ordinal()));
         byteBuf.writeOptional(preset.getPlayEffect(), byteBuf::writeBoolean);
         if(byteBuf.protocol >= ProtocolInfo.PROTOCOL_748) {

@@ -23,7 +23,9 @@ public class ItemTranslator {
     }
 
     private static final Map<Integer, String> mappingFiles = Map.ofEntries(
-            Map.entry(ProtocolInfo.PROTOCOL_729, "-1.21.30")
+            Map.entry(ProtocolInfo.PROTOCOL_729, "-1.21.30"),
+            Map.entry(ProtocolInfo.PROTOCOL_712, "-1.21.20"),
+            Map.entry(ProtocolInfo.PROTOCOL_686, "-1.21.2")
     );
 
     public static void init(){

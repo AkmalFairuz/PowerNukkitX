@@ -66,12 +66,14 @@ public class CameraInstructionPacket extends DataPacket {
             byteBuf.writeNotNull(f.getColor(), c -> this.writeColor(byteBuf, c));
         });
 
-        byteBuf.writeNotNull(targetInstruction, target -> {
-            byteBuf.writeNotNull(target.getTargetCenterOffset(), byteBuf::writeVector3f);
-            byteBuf.writeLongLE(this.targetInstruction.getUniqueEntityId());
-        });
+        if(byteBuf.protocol >= ProtocolInfo.PROTOCOL_712) {
+            byteBuf.writeNotNull(targetInstruction, target -> {
+                byteBuf.writeNotNull(target.getTargetCenterOffset(), byteBuf::writeVector3f);
+                byteBuf.writeLongLE(this.targetInstruction.getUniqueEntityId());
+            });
 
-        byteBuf.writeOptional(this.removeTarget.toOptionalValue(), byteBuf::writeBoolean);
+            byteBuf.writeOptional(this.removeTarget.toOptionalValue(), byteBuf::writeBoolean);
+        }
     }
 
     public void setInstruction(CameraInstruction instruction) {

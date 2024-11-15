@@ -40,8 +40,10 @@ public class UpdateAttributesPacket extends DataPacket {
                 byteBuf.writeFloatLE(entry.getMinValue());
                 byteBuf.writeFloatLE(entry.getMaxValue());
                 byteBuf.writeFloatLE(entry.getValue());
-                byteBuf.writeFloatLE(entry.getDefaultMinimum());
-                byteBuf.writeFloatLE(entry.getDefaultMaximum());
+                if(byteBuf.protocol >= ProtocolInfo.PROTOCOL_729) {
+                    byteBuf.writeFloatLE(entry.getDefaultMinimum());
+                    byteBuf.writeFloatLE(entry.getDefaultMaximum());
+                }
                 byteBuf.writeFloatLE(entry.getDefaultValue());
                 byteBuf.writeString(entry.getName());
                 byteBuf.writeUnsignedVarInt(0); // Modifiers

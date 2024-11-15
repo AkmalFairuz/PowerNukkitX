@@ -1123,7 +1123,7 @@ public class HandleByteBuf extends ByteBuf {
     }
 
     public Item readSlot(boolean instanceItem) {
-        int runtimeId = this.readVarInt();
+        int runtimeId = ItemTranslator.getInstance().getLatestId(protocol, this.readVarInt());
         if (runtimeId == 0) {
             return Item.AIR;
         }

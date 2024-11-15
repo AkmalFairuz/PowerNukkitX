@@ -10,6 +10,8 @@ import lombok.ToString;
 import cn.nukkit.network.connection.util.HandleByteBuf;
 import lombok.*;
 
+import java.util.Objects;
+
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
@@ -37,11 +39,15 @@ public class InventoryContentPacket extends DataPacket {
         for (Item slot : this.slots) {
             byteBuf.writeSlot(slot);
         }
-        byteBuf.writeFullContainerName(this.fullContainerName);
         if(byteBuf.protocol >= ProtocolInfo.PROTOCOL_729) {
-            byteBuf.writeSlot(this.storageItem);
-        }else{
-            byteBuf.writeUnsignedVarInt(0); // dynamic container size
+            byteBuf.writeFullContainerName(this.fullContainerName);
+            if(byteBuf.protocol >= ProtocolInfo.PROTOCOL_748) {
+                byteBuf.writeSlot(this.storageItem);
+            }else{
+                byteBuf.writeUnsignedVarInt(0); // dynamic container size
+            }
+        }else if(byteBuf.protocol >= ProtocolInfo.PROTOCOL_712) {
+            byteBuf.writeUnsignedVarInt(Objects.requireNonNullElse(this.fullContainerName.getDynamicId(), 0));
         }
     }
 
