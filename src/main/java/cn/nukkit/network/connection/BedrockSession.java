@@ -9,7 +9,6 @@ import cn.nukkit.event.player.PlayerCreationEvent;
 import cn.nukkit.event.server.DataPacketDecodeEvent;
 import cn.nukkit.event.server.DataPacketReceiveEvent;
 import cn.nukkit.event.server.DataPacketSendEvent;
-import cn.nukkit.item.Item;
 import cn.nukkit.network.connection.netty.BedrockBatchWrapper;
 import cn.nukkit.network.connection.netty.BedrockPacketWrapper;
 import cn.nukkit.network.connection.netty.codec.packet.BedrockPacketCodec;
@@ -188,7 +187,6 @@ public class BedrockSession {
         if (ev.isCancelled()) {
             return;
         }
-        System.out.println("Sending packet: " + packet.getClass().getSimpleName());
         this.peer.sendPacket(this.subClientId, 0, packet);
         this.logOutbound(packet);
     }
