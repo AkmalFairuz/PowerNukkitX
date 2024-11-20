@@ -6,6 +6,7 @@ import cn.nukkit.registry.Registries;
 import cn.nukkit.utils.Config;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
 import java.io.IOException;
@@ -36,6 +37,7 @@ public class ItemTranslator {
 
     private final Map<Integer, Map<Integer, Integer>> oldToLatestMapping = new Int2ObjectOpenHashMap<>();
     private final Map<Integer, Map<Integer, Integer>> latestToOldMapping = new Int2ObjectOpenHashMap<>();
+    private final Map<Integer, Object2IntOpenHashMap<String>> itemRegistries = new Int2ObjectOpenHashMap<>();
     private final Map<Integer, Integer> nullMapping = new Int2IntOpenHashMap();
 
     private ItemTranslator() {
@@ -43,6 +45,8 @@ public class ItemTranslator {
 
         for (Map.Entry<Integer, String> entry : mappingFiles.entrySet()) {
             int protocol = entry.getKey();
+            var itemRegistry = new Object2IntOpenHashMap<String>();
+
             String suffix = entry.getValue();
             Map<Integer, Integer> oldToLatest = new Int2IntOpenHashMap();
             Map<Integer, Integer> latestToOld = new Int2IntOpenHashMap();
@@ -69,6 +73,7 @@ public class ItemTranslator {
 
                     oldToLatest.put(id, latestId);
                     latestToOld.put(latestId, id);
+                    itemRegistry.put(name, id);
                 }
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -77,6 +82,7 @@ public class ItemTranslator {
             oldToLatestMapping.put(protocol, oldToLatest);
             latestToOldMapping.put(protocol, latestToOld);
             nullMapping.put(protocol, nullId);
+            itemRegistries.put(protocol, itemRegistry);
         }
     }
 
@@ -114,5 +120,9 @@ public class ItemTranslator {
             return oldFullId;
         }
         return getLatestId(protocol, oldFullId >> 16) << 16 | oldFullId & 0xffff;
+    }
+
+    public Object2IntOpenHashMap<String> getItemRegistry(int protocol) {
+        return itemRegistries.get(protocol);
     }
 }

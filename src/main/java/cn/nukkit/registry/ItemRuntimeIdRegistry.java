@@ -1,11 +1,9 @@
 package cn.nukkit.registry;
 
-import cn.nukkit.Server;
-import cn.nukkit.block.BlockID;
+import cn.nukkit.network.protocol.ProtocolInfo;
 import cn.nukkit.network.translator.ItemTranslator;
 import cn.nukkit.utils.BinaryStream;
 import cn.nukkit.utils.Config;
-import com.google.gson.Gson;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
@@ -13,7 +11,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,17 +30,17 @@ public class ItemRuntimeIdRegistry implements IRegistry<String, Integer, Integer
     }
 
     static final Int2ObjectOpenHashMap<String> ID2NAME = new Int2ObjectOpenHashMap<>();
-    private static byte[] itemPalette;
+    private static Map<Integer, byte[]> itemPalette = new HashMap<>();
 
-    public byte[] getItemPalette() {
-        return itemPalette;
+    public byte[] getItemPalette(int protocol) {
+        return itemPalette.get(protocol);
     }
 
-    private void generatePalette() {
+    private void generatePalette(Object2IntOpenHashMap<String> registry, int protocol) {
         BinaryStream paletteBuffer = new BinaryStream();
         HashMap<Integer, Boolean> verify = new HashMap<>();
-        paletteBuffer.putUnsignedVarInt(REGISTRY.size() + CUSTOM_REGISTRY.size());
-        for (var entry : REGISTRY.object2IntEntrySet()) {
+        paletteBuffer.putUnsignedVarInt(registry.size() + CUSTOM_REGISTRY.size());
+        for (var entry : registry.object2IntEntrySet()) {
             paletteBuffer.putString(entry.getKey());
             int rid = entry.getIntValue();
             paletteBuffer.putLShort(rid);
@@ -61,7 +58,7 @@ public class ItemRuntimeIdRegistry implements IRegistry<String, Integer, Integer
             }
             paletteBuffer.putBoolean(entry.getValue().isComponent());
         }
-        itemPalette = paletteBuffer.getBuffer();
+        itemPalette.put(protocol, paletteBuffer.getBuffer());
     }
 
     @Override
@@ -83,12 +80,16 @@ public class ItemRuntimeIdRegistry implements IRegistry<String, Integer, Integer
                 register0(item.get("name").toString(), ((Number) item.get("id")).intValue());
             }
             trim();
+            ItemTranslator.init();
+
+            for (int protocol : ProtocolInfo.COMPATIBLE_PROTOCOLS) {
+                var registry = protocol == ProtocolInfo.CURRENT_PROTOCOL ? REGISTRY : ItemTranslator.getInstance().getItemRegistry(protocol);
+                generatePalette(registry, protocol);
+            }
 
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
-        ItemTranslator.init();
     }
 
     @Override
@@ -120,7 +121,6 @@ public class ItemRuntimeIdRegistry implements IRegistry<String, Integer, Integer
     public void trim() {
         REGISTRY.trim();
         CUSTOM_REGISTRY.trim();
-        generatePalette();
     }
 
     public void reload() {

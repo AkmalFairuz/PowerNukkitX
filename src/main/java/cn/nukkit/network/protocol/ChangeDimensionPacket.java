@@ -38,8 +38,8 @@ public class ChangeDimensionPacket extends DataPacket {
         byteBuf.writeVarInt(this.dimension);
         byteBuf.writeVector3f(this.x, this.y, this.z);
         byteBuf.writeBoolean(this.respawn);
-        byteBuf.writeBoolean(this.loadingScreenId != null);
         if(byteBuf.protocol >= ProtocolInfo.PROTOCOL_712) {
+            byteBuf.writeBoolean(this.loadingScreenId != null);
             if (this.loadingScreenId != null) {
                 byteBuf.writeIntLE(this.loadingScreenId);
             }

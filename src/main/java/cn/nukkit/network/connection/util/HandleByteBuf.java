@@ -944,14 +944,24 @@ public class HandleByteBuf extends ByteBuf {
 
     public void writeFullContainerName(FullContainerName fullContainerName) {
         this.writeByte(fullContainerName.getContainer().getId());
-        this.writeOptional(OptionalValue.ofNullable(fullContainerName.getDynamicId()), this::writeIntLE);
-
+        if(protocol >= ProtocolInfo.PROTOCOL_729) {
+            this.writeOptional(OptionalValue.ofNullable(fullContainerName.getDynamicId()), this::writeIntLE);
+        }else if(protocol >= ProtocolInfo.PROTOCOL_712){
+            this.writeIntLE(Objects.requireNonNullElse(fullContainerName.getDynamicId(), 0));
+        }
     }
 
     public FullContainerName readFullContainerName() {
+        int containerSlotTypeId = this.readByte();
+        Integer dynamicId = null;
+        if(protocol >= ProtocolInfo.PROTOCOL_729) {
+            dynamicId = this.readOptional(null, this::readIntLE);
+        }else if(protocol >= ProtocolInfo.PROTOCOL_712){
+            dynamicId = this.readIntLE();
+        }
         return new FullContainerName(
-                ContainerSlotType.fromId(this.readByte()),
-                this.readOptional(null, this::readIntLE)
+                ContainerSlotType.fromId(containerSlotTypeId),
+                dynamicId
         );
     }
 
@@ -1123,7 +1133,7 @@ public class HandleByteBuf extends ByteBuf {
     }
 
     public Item readSlot(boolean instanceItem) {
-        int runtimeId = ItemTranslator.getInstance().getLatestId(protocol, this.readVarInt());
+        int runtimeId = this.readVarInt();
         if (runtimeId == 0) {
             return Item.AIR;
         }
@@ -1145,10 +1155,11 @@ public class HandleByteBuf extends ByteBuf {
         String[] canPlace;
         String[] canBreak;
         Item item;
+        int translatedRuntimeId = ItemTranslator.getInstance().getLatestId(protocol, runtimeId);
         if (blockRuntimeId == 0) {
-            item = Item.get(Registries.ITEM_RUNTIMEID.getIdentifier(runtimeId), damage, count);
+            item = Item.get(Registries.ITEM_RUNTIMEID.getIdentifier(translatedRuntimeId), damage, count);
         } else {
-            item = Item.get(Registries.ITEM_RUNTIMEID.getIdentifier(runtimeId), damage, count);
+            item = Item.get(Registries.ITEM_RUNTIMEID.getIdentifier(translatedRuntimeId), damage, count);
             BlockState blockState = Registries.BLOCKSTATE.get(blockRuntimeId);
             if (blockState != null) {
                 item.setBlockUnsafe(blockState.toBlock());
@@ -1575,12 +1586,13 @@ public class HandleByteBuf extends ByteBuf {
 
     protected ItemStackRequestAction readRequestActionData(ItemStackRequestActionType type) {
         return switch (type) {
-            case CRAFT_REPAIR_AND_DISENCHANT -> new CraftGrindstoneAction(readUnsignedVarInt(), readByte(), readInt());
+            case CRAFT_REPAIR_AND_DISENCHANT -> new
+                    CraftGrindstoneAction(readUnsignedVarInt(), readByte(), protocol >= ProtocolInfo.PROTOCOL_712 ? readInt() : 0);
             case CRAFT_LOOM -> new CraftLoomAction(readString());
             case CRAFT_RECIPE_AUTO -> {
                 int recipeId = readUnsignedVarInt();
                 int numberOfRequestedCrafts = readUnsignedByte();
-                int timesCrafted = readUnsignedByte();
+                int timesCrafted = protocol >= ProtocolInfo.PROTOCOL_712 ? readUnsignedByte() : 0;
                 List<ItemDescriptor> ingredients = new ObjectArrayList<>();
                 readArray(ingredients, HandleByteBuf::readUnsignedByte, HandleByteBuf::readRecipeIngredient);
                 yield new AutoCraftRecipeAction(
@@ -1633,11 +1645,11 @@ public class HandleByteBuf extends ByteBuf {
             );
             case CRAFT_RECIPE -> new CraftRecipeAction(
                     readUnsignedVarInt(),
-                    readUnsignedVarInt()
+                    protocol >= ProtocolInfo.PROTOCOL_712 ? readUnsignedVarInt() : 0
             );
             case CRAFT_CREATIVE -> new CraftCreativeAction(
                     readUnsignedVarInt(),
-                    readUnsignedVarInt()
+                    protocol >= ProtocolInfo.PROTOCOL_712 ? readUnsignedVarInt() : 0
             );
             case CRAFT_NON_IMPLEMENTED_DEPRECATED -> new CraftNonImplementedAction();
             default -> throw new UnsupportedOperationException("Unhandled stack request action type: " + type);

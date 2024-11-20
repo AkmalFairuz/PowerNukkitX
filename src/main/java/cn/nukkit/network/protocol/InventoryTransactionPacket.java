@@ -96,7 +96,9 @@ public class InventoryTransactionPacket extends DataPacket {
             case TYPE_USE_ITEM:
                 UseItemData useItemData = (UseItemData) this.transactionData;
                 byteBuf.writeUnsignedVarInt(useItemData.actionType);
-                byteBuf.writeUnsignedVarInt(useItemData.triggerType.ordinal());
+                if(byteBuf.protocol >= ProtocolInfo.PROTOCOL_712) {
+                    byteBuf.writeUnsignedVarInt(useItemData.triggerType.ordinal());
+                }
                 byteBuf.writeBlockVector3(useItemData.blockPos);
                 byteBuf.writeBlockFace(useItemData.face);
                 byteBuf.writeVarInt(useItemData.hotbarSlot);
@@ -104,7 +106,9 @@ public class InventoryTransactionPacket extends DataPacket {
                 byteBuf.writeVector3f(useItemData.playerPos.asVector3f());
                 byteBuf.writeVector3f(useItemData.clickPos);
                 byteBuf.writeUnsignedVarInt(useItemData.blockRuntimeId);
-                byteBuf.writeUnsignedVarInt(useItemData.clientInteractPrediction.ordinal());
+                if(byteBuf.protocol >= ProtocolInfo.PROTOCOL_712) {
+                    byteBuf.writeUnsignedVarInt(useItemData.clientInteractPrediction.ordinal());
+                }
                 break;
             case TYPE_USE_ITEM_ON_ENTITY:
                 UseItemOnEntityData useItemOnEntityData = (UseItemOnEntityData) this.transactionData;
@@ -159,7 +163,9 @@ public class InventoryTransactionPacket extends DataPacket {
                 UseItemData itemData = new UseItemData();
 
                 itemData.actionType = byteBuf.readUnsignedVarInt();
-                itemData.triggerType = UseItemData.TriggerType.values()[byteBuf.readUnsignedVarInt()];
+                if(byteBuf.protocol >= ProtocolInfo.PROTOCOL_712) {
+                    itemData.triggerType = UseItemData.TriggerType.values()[byteBuf.readUnsignedVarInt()];
+                }
                 itemData.blockPos = byteBuf.readBlockVector3();
                 itemData.face = byteBuf.readBlockFace();
                 itemData.hotbarSlot = byteBuf.readVarInt();
@@ -167,8 +173,9 @@ public class InventoryTransactionPacket extends DataPacket {
                 itemData.playerPos = byteBuf.readVector3f().asVector3();
                 itemData.clickPos = byteBuf.readVector3f();
                 itemData.blockRuntimeId = byteBuf.readUnsignedVarInt();
-                itemData.clientInteractPrediction = UseItemData.PredictedResult.values()[byteBuf.readUnsignedVarInt()];
-
+                if(byteBuf.protocol >= ProtocolInfo.PROTOCOL_712) {
+                    itemData.clientInteractPrediction = UseItemData.PredictedResult.values()[byteBuf.readUnsignedVarInt()];
+                }
                 this.transactionData = itemData;
                 break;
             case TYPE_USE_ITEM_ON_ENTITY:

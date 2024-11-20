@@ -121,6 +121,7 @@ public class StartGamePacket extends DataPacket {
     public boolean exportedFromEditor;
     public byte chatRestrictionLevel;
     public boolean disablePlayerInteractions;
+    public byte[] rawItemPalette;
     /**
      * @since v589
      */
@@ -253,7 +254,7 @@ public class StartGamePacket extends DataPacket {
             log.error("Error while encoding NBT data of BlockPropertyData", e);
         }
 
-        byteBuf.writeBytes(Registries.ITEM_RUNTIMEID.getItemPalette());
+        byteBuf.writeBytes(rawItemPalette);
         byteBuf.writeString(this.multiplayerCorrelationId);
         byteBuf.writeBoolean(this.isInventoryServerAuthoritative);
         byteBuf.writeString(vanillaVersion); // Server Engine
