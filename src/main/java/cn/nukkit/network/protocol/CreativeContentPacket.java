@@ -1,9 +1,11 @@
 package cn.nukkit.network.protocol;
 
-import cn.nukkit.item.Item;
 import cn.nukkit.network.connection.util.HandleByteBuf;
+import cn.nukkit.network.protocol.types.inventory.CreativeContentEntry;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;import lombok.*;
+
+import java.util.List;
 
 @ToString
 @NoArgsConstructor
@@ -12,7 +14,7 @@ public class CreativeContentPacket extends DataPacket {
     public static final int NETWORK_ID = ProtocolInfo.CREATIVE_CONTENT_PACKET;
 
 
-    public Item[] entries = Item.EMPTY_ARRAY;
+    public List<CreativeContentEntry> entries;
 
     @Override
     public int pid() {
@@ -26,11 +28,9 @@ public class CreativeContentPacket extends DataPacket {
 
     @Override
     public void encode(HandleByteBuf byteBuf) {
-        
-        byteBuf.writeUnsignedVarInt(entries.length);
-        for (int i = 0; i < entries.length; i++) {
-            byteBuf.writeUnsignedVarInt(i + 1);//netId
-            byteBuf.writeSlot(entries[i], true);
+        byteBuf.writeUnsignedVarInt(entries.size());
+        for (CreativeContentEntry entry : entries) {
+            entry.write(byteBuf);
         }
     }
 

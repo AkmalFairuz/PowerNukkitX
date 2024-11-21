@@ -17,7 +17,7 @@ public interface LevelProvider {
 
     DimensionData getDimensionData();
 
-    Pair<byte[], Integer> requestChunkData(int x, int z);
+    Pair<byte[], Integer> requestChunkData(int x, int z, int protocol);
 
     String getPath();
 

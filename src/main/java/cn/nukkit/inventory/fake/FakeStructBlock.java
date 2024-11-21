@@ -9,6 +9,7 @@ import cn.nukkit.math.Vector3;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.network.protocol.BlockEntityDataPacket;
 import cn.nukkit.network.protocol.UpdateBlockPacket;
+import cn.nukkit.network.translator.BlockTranslator;
 
 
 public class FakeStructBlock extends SingleFakeBlock {
@@ -35,7 +36,7 @@ public class FakeStructBlock extends SingleFakeBlock {
 
         lastPositions.forEach(position -> {
             UpdateBlockPacket updateBlockPacket = new UpdateBlockPacket();
-            updateBlockPacket.blockRuntimeId = block.getRuntimeId();
+            updateBlockPacket.blockRuntimeId = BlockTranslator.getInstance().getOldId(player.getSession().getProtocol(), block.getRuntimeId());
             updateBlockPacket.flags = UpdateBlockPacket.FLAG_NETWORK;
             updateBlockPacket.x = position.getFloorX();
             updateBlockPacket.y = position.getFloorY();
@@ -56,7 +57,7 @@ public class FakeStructBlock extends SingleFakeBlock {
     public void remove(Player player) {
         this.lastPositions.forEach(position -> {
             UpdateBlockPacket packet = new UpdateBlockPacket();
-            packet.blockRuntimeId = player.getLevel().getBlock(position).getRuntimeId();
+            packet.blockRuntimeId = BlockTranslator.getInstance().getOldId(player.getSession().getProtocol(), player.getLevel().getBlock(position).getRuntimeId());
             packet.flags = UpdateBlockPacket.FLAG_NETWORK;
             packet.x = position.getFloorX();
             packet.y = position.getFloorY();

@@ -6,6 +6,7 @@ import cn.nukkit.level.AntiXraySystem;
 import cn.nukkit.level.Level;
 import cn.nukkit.level.format.ChunkSection;
 import cn.nukkit.level.format.bitarray.BitArrayVersion;
+import cn.nukkit.network.translator.BlockTranslator;
 import cn.nukkit.registry.Registries;
 import cn.nukkit.utils.ByteBufVarInt;
 import cn.nukkit.utils.random.NukkitRandom;
@@ -43,7 +44,7 @@ public class BlockPalette extends Palette<BlockState> {
         }
     }
 
-    public void writeObfuscatedToNetwork(Level level, AtomicLong blockChanges, ByteBuf byteBuf, RuntimeDataSerializer<BlockState> serializer) {
+    public void writeObfuscatedToNetwork(Level level, AtomicLong blockChanges, ByteBuf byteBuf, RuntimeDataSerializer<BlockState> serializer, int protocol) {
         var realOreToFakeMap = level.getAntiXraySystem().getRawRealOreToReplacedRuntimeIdMap();
         var fakeBlockMap = level.getAntiXraySystem().getRawFakeOreToPutRuntimeIdMap();
         var transparentBlockSet = AntiXraySystem.getRawTransparentBlockRuntimeIds();
@@ -82,7 +83,9 @@ public class BlockPalette extends Palette<BlockState> {
         byteBuf.writeByte(getPaletteHeader(write.bitArray.version(), true));
         for (int word : write.bitArray.words()) byteBuf.writeIntLE(word);
         this.bitArray.writeSizeToNetwork(byteBuf, write.palette.size());
-        for (BlockState value : write.palette) ByteBufVarInt.writeInt(byteBuf, serializer.serialize(value));
+
+        BlockTranslator translator = BlockTranslator.getInstance();
+        for (BlockState value : write.palette) ByteBufVarInt.writeInt(byteBuf, translator.getOldId(protocol, serializer.serialize(value)));
     }
 
     public void setNeedReObfuscate() {

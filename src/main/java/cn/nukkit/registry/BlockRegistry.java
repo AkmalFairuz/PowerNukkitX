@@ -1,10 +1,12 @@
 package cn.nukkit.registry;
 
+import cn.nukkit.Server;
 import cn.nukkit.block.*;
 import cn.nukkit.block.customblock.CustomBlock;
 import cn.nukkit.block.customblock.CustomBlockDefinition;
 import cn.nukkit.item.ItemBlock;
 import cn.nukkit.level.Level;
+import cn.nukkit.network.translator.BlockTranslator;
 import cn.nukkit.plugin.Plugin;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import lombok.extern.slf4j.Slf4j;
@@ -1258,8 +1260,11 @@ public final class BlockRegistry implements BlockID, IRegistry<String, Block, Cl
             register(YELLOW_TERRACOTTA, BlockYellowTerracotta.class);
             register(YELLOW_WOOL, BlockYellowWool.class);
             register(ZOMBIE_HEAD, BlockZombieHead.class);
-        } catch (RegisterException ignore) {
+        } catch (RegisterException exception) {
+            Server.getInstance().getLogger().debug("Block register error", exception);
         }
+
+        BlockTranslator.init();
     }
 
     public void trim() {

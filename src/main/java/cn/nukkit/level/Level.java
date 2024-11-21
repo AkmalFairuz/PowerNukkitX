@@ -65,6 +65,7 @@ import cn.nukkit.nbt.tag.Tag;
 import cn.nukkit.network.protocol.*;
 import cn.nukkit.network.protocol.types.PlayerAbility;
 import cn.nukkit.network.protocol.types.SpawnPointType;
+import cn.nukkit.network.translator.BlockTranslator;
 import cn.nukkit.network.translator.ProtocolUtils;
 import cn.nukkit.plugin.InternalPlugin;
 import cn.nukkit.plugin.Plugin;
@@ -1303,6 +1304,12 @@ public class Level implements Metadatable {
     }
 
     public void sendBlocks(Player[] target, Vector3[] blocks, int flags, int dataLayer, boolean optimizeRebuilds) {
+        for(Map.Entry<Integer, List<Player>> entry : ProtocolUtils.groupByProtocol(List.of(target)).entrySet()){
+            this.sendBlocks(entry.getValue().toArray(Player.EMPTY_ARRAY), blocks, flags, dataLayer, optimizeRebuilds, entry.getKey());
+        }
+    }
+
+    public void sendBlocks(Player[] target, Vector3[] blocks, int flags, int dataLayer, boolean optimizeRebuilds, int protocol) {
         int size = 0;
         for (Vector3 block : blocks) {
             if (block != null) size++;
@@ -1348,7 +1355,7 @@ public class Level implements Metadatable {
                 }
                 runtimeId = hash;
             }
-            updateBlockPacket.blockRuntimeId = runtimeId;
+            updateBlockPacket.blockRuntimeId = BlockTranslator.getInstance().getOldId(protocol, runtimeId);
             packets.add(updateBlockPacket);
         }
         for (var p : packets) {
@@ -3409,21 +3416,23 @@ public class Level implements Metadatable {
             int z = getHashZ(index);
             final Int2ObjectNonBlockingMap<Player> players = this.chunkSendQueue.get(index);
             if (players != null) {
-                final var pair = this.requireProvider().requestChunkData(x, z);
-                for (Player player : Objects.requireNonNull(players).values()) {
-                    if (player.isConnected()) {
-                        NetworkChunkPublisherUpdatePacket ncp = new NetworkChunkPublisherUpdatePacket();
-                        ncp.position = player.asBlockVector3();
-                        ncp.radius = player.getViewDistance() << 4;
-                        player.dataPacket(ncp);
+                for(Map.Entry<Integer, List<Player>> entry : ProtocolUtils.groupByProtocol(players.values().stream().toList()).entrySet()) {
+                    final var pair = this.requireProvider().requestChunkData(x, z, entry.getKey());
+                    for (Player player : Objects.requireNonNull(entry.getValue())) {
+                        if (player.isConnected()) {
+                            NetworkChunkPublisherUpdatePacket ncp = new NetworkChunkPublisherUpdatePacket();
+                            ncp.position = player.asBlockVector3();
+                            ncp.radius = player.getViewDistance() << 4;
+                            player.dataPacket(ncp);
 
-                        LevelChunkPacket pk = new LevelChunkPacket();
-                        pk.chunkX = x;
-                        pk.chunkZ = z;
-                        pk.dimension = getDimensionData().getDimensionId();
-                        pk.subChunkCount = pair.right();
-                        pk.data = pair.left();
-                        player.sendChunk(x, z, pk);
+                            LevelChunkPacket pk = new LevelChunkPacket();
+                            pk.chunkX = x;
+                            pk.chunkZ = z;
+                            pk.dimension = getDimensionData().getDimensionId();
+                            pk.subChunkCount = pair.right();
+                            pk.data = pair.left();
+                            player.sendChunk(x, z, pk);
+                        }
                     }
                 }
                 this.chunkSendQueue.remove(index);

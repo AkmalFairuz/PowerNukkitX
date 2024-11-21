@@ -26,6 +26,7 @@ import cn.nukkit.network.protocol.types.itemstack.request.ItemStackRequest;
 import cn.nukkit.network.protocol.types.itemstack.request.ItemStackRequestSlotData;
 import cn.nukkit.network.protocol.types.itemstack.request.TextProcessingEventOrigin;
 import cn.nukkit.network.protocol.types.itemstack.request.action.*;
+import cn.nukkit.network.translator.BlockTranslator;
 import cn.nukkit.network.translator.ItemTranslator;
 import cn.nukkit.recipe.descriptor.ComplexAliasDescriptor;
 import cn.nukkit.recipe.descriptor.DefaultDescriptor;
@@ -1234,7 +1235,12 @@ public class HandleByteBuf extends ByteBuf {
             return;
         }
 
-        int networkId = ItemTranslator.getInstance().getOldId(protocol, item.getRuntimeId());
+        Integer networkId = ItemTranslator.getInstance().getOldIdNullable(protocol, item.getRuntimeId());
+        if(networkId == null){
+            writeByte((byte) 0);
+            return;
+        }
+
         writeVarInt(networkId);//write item runtimeId
         writeShortLE(item.getCount());//write item count
         writeUnsignedVarInt(item.getDamage());//write damage value
@@ -1247,7 +1253,12 @@ public class HandleByteBuf extends ByteBuf {
             }
         }
 
-        writeVarInt(item.isBlock() ? item.getBlockUnsafe().getRuntimeId() : 0);
+        if(item.isBlock()){
+            Integer blockRuntimeId = BlockTranslator.getInstance().getOldIdNullable(protocol, item.getBlockUnsafe().getRuntimeId());
+            writeVarInt(blockRuntimeId != null ? blockRuntimeId : 0);
+        }else{
+            writeVarInt(0);
+        }
 
         ByteBuf userDataBuf = ByteBufAllocator.DEFAULT.ioBuffer();
         try (LittleEndianByteBufOutputStream stream = new LittleEndianByteBufOutputStream(userDataBuf)) {

@@ -132,23 +132,23 @@ public record ChunkSection(byte y,
         blockLayer[1].setNeedReObfuscate();
     }
 
-    public void writeToBuf(ByteBuf byteBuf) {
+    public void writeToBuf(ByteBuf byteBuf, int protocol) {
         byteBuf.writeByte(VERSION);
         //block layer count
         byteBuf.writeByte(LAYER_COUNT);
         byteBuf.writeByte(y);
 
-        blockLayer[0].writeToNetwork(byteBuf, BlockState::blockStateHash);
-        blockLayer[1].writeToNetwork(byteBuf, BlockState::blockStateHash);
+        blockLayer[0].writeToNetwork(byteBuf, BlockState::blockStateHash, protocol);
+        blockLayer[1].writeToNetwork(byteBuf, BlockState::blockStateHash, protocol);
     }
 
-    public void writeObfuscatedToBuf(Level level, ByteBuf byteBuf) {
+    public void writeObfuscatedToBuf(Level level, ByteBuf byteBuf, int protocol) {
         byteBuf.writeByte(VERSION);
         //block layer count
         byteBuf.writeByte(LAYER_COUNT);
         byteBuf.writeByte(y);
 
-        blockLayer[0].writeObfuscatedToNetwork(level, blockChanges, byteBuf, BlockState::blockStateHash);
-        blockLayer[1].writeObfuscatedToNetwork(level, blockChanges, byteBuf, BlockState::blockStateHash);
+        blockLayer[0].writeObfuscatedToNetwork(level, blockChanges, byteBuf, BlockState::blockStateHash, protocol);
+        blockLayer[1].writeObfuscatedToNetwork(level, blockChanges, byteBuf, BlockState::blockStateHash, protocol);
     }
 }

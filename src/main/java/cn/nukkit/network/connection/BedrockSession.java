@@ -9,6 +9,7 @@ import cn.nukkit.event.player.PlayerCreationEvent;
 import cn.nukkit.event.server.DataPacketDecodeEvent;
 import cn.nukkit.event.server.DataPacketReceiveEvent;
 import cn.nukkit.event.server.DataPacketSendEvent;
+import cn.nukkit.item.Item;
 import cn.nukkit.network.connection.netty.BedrockBatchWrapper;
 import cn.nukkit.network.connection.netty.BedrockPacketWrapper;
 import cn.nukkit.network.connection.netty.codec.packet.BedrockPacketCodec;
@@ -24,6 +25,8 @@ import cn.nukkit.network.process.handler.SpawnResponseHandler;
 import cn.nukkit.network.protocol.*;
 import cn.nukkit.network.protocol.types.PacketCompressionAlgorithm;
 import cn.nukkit.network.protocol.types.PlayerInfo;
+import cn.nukkit.network.protocol.types.inventory.CreativeContentEntry;
+import cn.nukkit.network.translator.ItemTranslator;
 import cn.nukkit.plugin.InternalPlugin;
 import cn.nukkit.registry.Registries;
 import cn.nukkit.utils.ByteBufVarInt;
@@ -34,6 +37,7 @@ import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.CompositeByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.util.internal.PlatformDependent;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -46,6 +50,7 @@ import javax.crypto.SecretKey;
 import java.lang.reflect.Constructor;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -521,9 +526,7 @@ public class BedrockSession {
     }
 
     public void syncCreativeContent() {
-        var pk = new CreativeContentPacket();
-        pk.entries = Registries.CREATIVE.getCreativeItems();
-        this.sendPacket(pk);
+        this.sendRawPacket(ProtocolInfo.CREATIVE_CONTENT_PACKET, Registries.CREATIVE.getCreativeContentPacketBytes(getProtocol()));
     }
 
     public void syncInventory() {

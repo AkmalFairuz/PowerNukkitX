@@ -6,10 +6,20 @@ import cn.nukkit.item.ItemID;
 import cn.nukkit.nbt.NBTIO;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.nbt.tag.ListTag;
+import cn.nukkit.network.connection.util.HandleByteBuf;
+import cn.nukkit.network.protocol.CreativeContentPacket;
+import cn.nukkit.network.protocol.ProtocolInfo;
+import cn.nukkit.network.protocol.types.inventory.CreativeContentEntry;
+import cn.nukkit.network.translator.BlockTranslator;
+import cn.nukkit.network.translator.ItemTranslator;
 import com.google.gson.Gson;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
+import io.netty.util.ReferenceCountUtil;
 import io.netty.util.internal.EmptyArrays;
 import it.unimi.dsi.fastutil.ints.Int2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 
@@ -33,6 +43,9 @@ public class CreativeItemRegistry implements ItemID, IRegistry<Integer, Item, It
     static final Int2ObjectLinkedOpenHashMap<Item> MAP = new Int2ObjectLinkedOpenHashMap<>();
     static final Int2ObjectOpenHashMap<Item> INTERNAL_DIFF_ITEM = new Int2ObjectOpenHashMap<>();
     static final AtomicBoolean isLoad = new AtomicBoolean(false);
+    static final Map<Integer, ByteBuf> creativeContentPackets = new Int2ObjectOpenHashMap<>();
+
+    private boolean needRebuild = true;
 
     @Override
     public void init() {
@@ -197,5 +210,49 @@ public class CreativeItemRegistry implements ItemID, IRegistry<Integer, Item, It
         if (MAP.putIfAbsent(key, value) != null) {
             throw new RegisterException("This creative item has already been registered with the identifier: " + key);
         }
+    }
+
+    private ByteBuf buildCreativeContentPacket(int protocol){
+        Item[] items = getCreativeItems();
+
+        List<CreativeContentEntry> entries = new ObjectArrayList<>();
+
+        int entryId = 0;
+        for(var item : items){
+            if(ItemTranslator.getInstance().getOldIdNullable(protocol, item.getRuntimeId()) == null){
+                continue;
+            }
+            if(item.isBlock() && BlockTranslator.getInstance().getOldIdNullable(protocol, item.getBlockUnsafe().getRuntimeId()) == null){
+                continue;
+            }
+            entries.add(new CreativeContentEntry(++entryId, item));
+        }
+
+        CreativeContentPacket pk = new CreativeContentPacket();
+        pk.entries = entries;
+
+        var buf = ByteBufAllocator.DEFAULT.ioBuffer(64);
+        pk.encode(HandleByteBuf.of(buf, protocol));
+
+        return buf;
+    }
+
+    public void buildCreativeContentPackets(){
+        for(var buf : creativeContentPackets.values()){
+            ReferenceCountUtil.safeRelease(buf);
+        }
+        creativeContentPackets.clear();
+
+        for(var protocol : ProtocolInfo.COMPATIBLE_PROTOCOLS){
+            creativeContentPackets.put(protocol, buildCreativeContentPacket(protocol).retain());
+        }
+    }
+
+    public ByteBuf getCreativeContentPacketBytes(int protocol){
+        if(needRebuild){
+            buildCreativeContentPackets();
+            needRebuild = false;
+        }
+        return creativeContentPackets.get(protocol);
     }
 }

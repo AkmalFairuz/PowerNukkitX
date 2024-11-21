@@ -65,14 +65,14 @@ public final class ItemRegistry implements ItemID, IRegistry<String, Item, Class
             register(BIRCH_BOAT, ItemBirchBoat.class);
             register(BIRCH_CHEST_BOAT, ItemBirchChestBoat.class);
             register(BIRCH_SIGN, ItemBirchSign.class);
-            // register(BLACK_BUNDLE, ItemBlackBundle.class);
+            register(BLACK_BUNDLE, ItemBlackBundle.class);
             register(BLACK_DYE, ItemBlackDye.class);
             register(BLADE_POTTERY_SHERD, ItemBladePotterySherd.class);
             register(BLAZE_POWDER, ItemBlazePowder.class);
             register(BLAZE_ROD, ItemBlazeRod.class);
             register(BLAZE_SPAWN_EGG, ItemBlazeSpawnEgg.class);
             register(BLEACH, ItemBleach.class);
-            // register(BLUE_BUNDLE, ItemBlueBundle.class);
+            register(BLUE_BUNDLE, ItemBlueBundle.class);
             register(BLUE_DYE, ItemBlueDye.class);
             register(BOAT, ItemBoat.class);
             register(BOGGED_SPAWN_EGG, ItemBoggedSpawnEgg.class);
@@ -88,7 +88,7 @@ public final class ItemRegistry implements ItemID, IRegistry<String, Item, Class
             register(BREEZE_SPAWN_EGG, ItemBreezeSpawnEgg.class);
             register(BREWER_POTTERY_SHERD, ItemBrewerPotterySherd.class);
             register(BRICK, ItemBrick.class);
-            // register(BROWN_BUNDLE, ItemBrownBundle.class);
+            register(BROWN_BUNDLE, ItemBrownBundle.class);
             register(BROWN_DYE, ItemBrownDye.class);
             register(BRUSH, ItemBrush.class);
             register(BUCKET, ItemBucket.class);
@@ -147,7 +147,7 @@ public final class ItemRegistry implements ItemID, IRegistry<String, Item, Class
             register(CREEPER_SPAWN_EGG, ItemCreeperSpawnEgg.class);
             register(CRIMSON_SIGN, ItemCrimsonSign.class);
             register(CROSSBOW, ItemCrossbow.class);
-            // register(CYAN_BUNDLE, ItemCyanBundle.class);
+            register(CYAN_BUNDLE, ItemCyanBundle.class);
             register(CYAN_DYE, ItemCyanDye.class);
             register(DANGER_POTTERY_SHERD, ItemDangerPotterySherd.class);
             register(DARK_OAK_BOAT, ItemDarkOakBoat.class);
@@ -237,9 +237,9 @@ public final class ItemRegistry implements ItemID, IRegistry<String, Item, Class
             register(GOLDEN_PICKAXE, ItemGoldenPickaxe.class);
             register(GOLDEN_SHOVEL, ItemGoldenShovel.class);
             register(GOLDEN_SWORD, ItemGoldenSword.class);
-            // register(GRAY_BUNDLE, ItemGrayBundle.class);
+            register(GRAY_BUNDLE, ItemGrayBundle.class);
             register(GRAY_DYE, ItemGrayDye.class);
-            // register(GREEN_BUNDLE, ItemGreenBundle.class);
+            register(GREEN_BUNDLE, ItemGreenBundle.class);
             register(GREEN_DYE, ItemGreenDye.class);
             register(GUARDIAN_SPAWN_EGG, ItemGuardianSpawnEgg.class);
             register(GUNPOWDER, ItemGunpowder.class);
@@ -287,11 +287,11 @@ public final class ItemRegistry implements ItemID, IRegistry<String, Item, Class
             register(LEATHER_LEGGINGS, ItemLeatherLeggings.class);
             register(LEAVES, ItemLeaves.class);
             register(LEAVES2, ItemLeaves2.class);
-            // register(LIGHT_BLUE_BUNDLE, ItemLightBlueBundle.class);
+            register(LIGHT_BLUE_BUNDLE, ItemLightBlueBundle.class);
             register(LIGHT_BLUE_DYE, ItemLightBlueDye.class);
-            // register(LIGHT_GRAY_BUNDLE, ItemLightGrayBundle.class);
+            register(LIGHT_GRAY_BUNDLE, ItemLightGrayBundle.class);
             register(LIGHT_GRAY_DYE, ItemLightGrayDye.class);
-            // register(LIME_BUNDLE, ItemLimeBundle.class);
+            register(LIME_BUNDLE, ItemLimeBundle.class);
             register(LIME_DYE, ItemLimeDye.class);
             register(LINGERING_POTION, ItemLingeringPotion.class);
             register(LLAMA_SPAWN_EGG, ItemLlamaSpawnEgg.class);
@@ -299,7 +299,7 @@ public final class ItemRegistry implements ItemID, IRegistry<String, Item, Class
             register(LOG, ItemLog.class);
             register(LOG2, ItemLog2.class);
             register(MACE, ItemMace.class);
-            // register(MAGENTA_BUNDLE, ItemMagentaBundle.class);
+            register(MAGENTA_BUNDLE, ItemMagentaBundle.class);
             register(MAGENTA_DYE, ItemMagentaDye.class);
             register(MAGMA_CREAM, ItemMagmaCream.class);
             register(MAGMA_CUBE_SPAWN_EGG, ItemMagmaCubeSpawnEgg.class);
@@ -360,7 +360,7 @@ public final class ItemRegistry implements ItemID, IRegistry<String, Item, Class
             register(OCELOT_SPAWN_EGG, ItemOcelotSpawnEgg.class);
             register(OMINOUS_BOTTLE, ItemOminousBottle.class);
             register(OMINOUS_TRIAL_KEY, ItemOminousTrialKey.class);
-            // register(ORANGE_BUNDLE, ItemOrangeBundle.class);
+            register(ORANGE_BUNDLE, ItemOrangeBundle.class);
             register(ORANGE_DYE, ItemOrangeDye.class);
             register(PAINTING, ItemPainting.class);
             register(PANDA_SPAWN_EGG, ItemPandaSpawnEgg.class);
@@ -374,7 +374,7 @@ public final class ItemRegistry implements ItemID, IRegistry<String, Item, Class
             register(PIGLIN_HEAD, ItemPiglinHead.class);
             register(PIGLIN_SPAWN_EGG, ItemPiglinSpawnEgg.class);
             register(PILLAGER_SPAWN_EGG, ItemPillagerSpawnEgg.class);
-            // register(PINK_BUNDLE, ItemPinkBundle.class);
+            register(PINK_BUNDLE, ItemPinkBundle.class);
             register(PINK_DYE, ItemPinkDye.class);
             register(PITCHER_POD, ItemPitcherPod.class);
             register(PLANKS, ItemPlanks.class);
@@ -396,7 +396,7 @@ public final class ItemRegistry implements ItemID, IRegistry<String, Item, Class
             register(PUFFERFISH_SPAWN_EGG, ItemPufferfishSpawnEgg.class);
             register(PUMPKIN_PIE, ItemPumpkinPie.class);
             register(PUMPKIN_SEEDS, ItemPumpkinSeeds.class);
-            // register(PURPLE_BUNDLE, ItemPurpleBundle.class);
+            register(PURPLE_BUNDLE, ItemPurpleBundle.class);
             register(PURPLE_DYE, ItemPurpleDye.class);
             register(PURPUR_BLOCK, ItemPurpurBlock.class);
             register(QUARTZ, ItemQuartz.class);
@@ -413,7 +413,7 @@ public final class ItemRegistry implements ItemID, IRegistry<String, Item, Class
             register(RAW_GOLD, ItemRawGold.class);
             register(RAW_IRON, ItemRawIron.class);
             register(RECOVERY_COMPASS, ItemRecoveryCompass.class);
-            // register(RED_BUNDLE, ItemRedBundle.class);
+            register(RED_BUNDLE, ItemRedBundle.class);
             register(RED_DYE, ItemRedDye.class);
             register(RED_FLOWER, ItemRedFlower.class);
             register(RED_SANDSTONE, ItemRedSandstone.class);
@@ -510,7 +510,7 @@ public final class ItemRegistry implements ItemID, IRegistry<String, Item, Class
             register(WATER_BUCKET, ItemWaterBucket.class);
             register(WAYFINDER_ARMOR_TRIM_SMITHING_TEMPLATE, ItemWayfinderArmorTrimSmithingTemplate.class);
             register(WHEAT_SEEDS, ItemWheatSeeds.class);
-            // register(WHITE_BUNDLE, ItemWhiteBundle.class);
+            register(WHITE_BUNDLE, ItemWhiteBundle.class);
             register(WHITE_DYE, ItemWhiteDye.class);
             register(WILD_ARMOR_TRIM_SMITHING_TEMPLATE, ItemWildArmorTrimSmithingTemplate.class);
             register(WIND_CHARGE, ItemWindCharge.class);
@@ -530,7 +530,7 @@ public final class ItemRegistry implements ItemID, IRegistry<String, Item, Class
             register(WOOL, ItemWool.class);
             register(WRITABLE_BOOK, ItemWritableBook.class);
             register(WRITTEN_BOOK, ItemWrittenBook.class);
-            // register(YELLOW_BUNDLE, ItemYellowBundle.class);
+            register(YELLOW_BUNDLE, ItemYellowBundle.class);
             register(YELLOW_DYE, ItemYellowDye.class);
             register(ZOGLIN_SPAWN_EGG, ItemZoglinSpawnEgg.class);
             register(ZOMBIE_HEAD, ItemZombieHead.class);

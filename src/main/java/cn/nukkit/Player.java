@@ -108,6 +108,7 @@ import cn.nukkit.network.protocol.types.GameType;
 import cn.nukkit.network.protocol.types.PlayerBlockActionData;
 import cn.nukkit.network.protocol.types.PlayerInfo;
 import cn.nukkit.network.protocol.types.SpawnPointType;
+import cn.nukkit.network.translator.BlockTranslator;
 import cn.nukkit.network.translator.ItemTranslator;
 import cn.nukkit.permission.PermissibleBase;
 import cn.nukkit.permission.Permission;
@@ -4342,7 +4343,7 @@ public class Player extends EntityHuman implements CommandSender, ChunkLoader, I
             for (var b : this.level.getBlockEntities().values()) {
                 if (b instanceof BlockEntitySpawnable blockEntitySpawnable) {
                     UpdateBlockPacket setAir = new UpdateBlockPacket();
-                    setAir.blockRuntimeId = BlockAir.STATE.blockStateHash();
+                    setAir.blockRuntimeId = BlockTranslator.getInstance().getOldId(this.session.getProtocol(), BlockAir.STATE.blockStateHash());
                     setAir.flags = UpdateBlockPacket.FLAG_NETWORK;
                     setAir.x = b.getFloorX();
                     setAir.y = b.getFloorY();
@@ -4350,7 +4351,7 @@ public class Player extends EntityHuman implements CommandSender, ChunkLoader, I
                     this.dataPacket(setAir);
 
                     UpdateBlockPacket revertAir = new UpdateBlockPacket();
-                    revertAir.blockRuntimeId = b.getBlock().getRuntimeId();
+                    revertAir.blockRuntimeId =  BlockTranslator.getInstance().getOldId(this.session.getProtocol(), b.getBlock().getRuntimeId());
                     revertAir.flags = UpdateBlockPacket.FLAG_NETWORK;
                     revertAir.x = b.getFloorX();
                     revertAir.y = b.getFloorY();

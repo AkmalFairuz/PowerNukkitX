@@ -1490,6 +1490,9 @@ public abstract class Entity extends Location implements Metadatable, EntityID, 
                             server.getScheduler().scheduleDelayedTask(new Task() {
                                 @Override
                                 public void onRun(int currentTick) {
+                                    if(isClosed() || !isAlive()){
+                                        return;
+                                    }
                                     // dirty hack to make sure chunks are loaded and generated before spawning
                                     // player
                                     inPortalTicks = 81;
@@ -1509,6 +1512,9 @@ public abstract class Entity extends Location implements Metadatable, EntityID, 
     }
 
     public void updateMovement() {
+        if(!this.isAlive()){
+            return;
+        }
         //这样做是为了向后兼容旧插件
         if (!enableHeadYaw()) {
             this.headYaw = this.yaw;

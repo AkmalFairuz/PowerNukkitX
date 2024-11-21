@@ -7,6 +7,7 @@ import cn.nukkit.network.protocol.types.inventory.transaction.ReleaseItemData;
 import cn.nukkit.network.protocol.types.inventory.transaction.TransactionData;
 import cn.nukkit.network.protocol.types.inventory.transaction.UseItemData;
 import cn.nukkit.network.protocol.types.inventory.transaction.UseItemOnEntityData;
+import cn.nukkit.network.translator.BlockTranslator;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -105,7 +106,7 @@ public class InventoryTransactionPacket extends DataPacket {
                 byteBuf.writeSlot(useItemData.itemInHand);
                 byteBuf.writeVector3f(useItemData.playerPos.asVector3f());
                 byteBuf.writeVector3f(useItemData.clickPos);
-                byteBuf.writeUnsignedVarInt(useItemData.blockRuntimeId);
+                byteBuf.writeUnsignedVarInt(BlockTranslator.getInstance().getOldId(byteBuf.protocol, useItemData.blockRuntimeId));
                 if(byteBuf.protocol >= ProtocolInfo.PROTOCOL_712) {
                     byteBuf.writeUnsignedVarInt(useItemData.clientInteractPrediction.ordinal());
                 }
@@ -172,7 +173,7 @@ public class InventoryTransactionPacket extends DataPacket {
                 itemData.itemInHand = byteBuf.readSlot();
                 itemData.playerPos = byteBuf.readVector3f().asVector3();
                 itemData.clickPos = byteBuf.readVector3f();
-                itemData.blockRuntimeId = byteBuf.readUnsignedVarInt();
+                itemData.blockRuntimeId = BlockTranslator.getInstance().getLatestId(byteBuf.protocol, byteBuf.readUnsignedVarInt());
                 if(byteBuf.protocol >= ProtocolInfo.PROTOCOL_712) {
                     itemData.clientInteractPrediction = UseItemData.PredictedResult.values()[byteBuf.readUnsignedVarInt()];
                 }

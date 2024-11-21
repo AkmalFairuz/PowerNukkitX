@@ -15,6 +15,7 @@ import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.nbt.tag.LinkedCompoundTag;
 import cn.nukkit.nbt.tag.TreeMapCompoundTag;
 import cn.nukkit.network.protocol.ProtocolInfo;
+import cn.nukkit.network.translator.BlockTranslator;
 import cn.nukkit.utils.ByteBufVarInt;
 import cn.nukkit.utils.HashUtils;
 import cn.nukkit.utils.SemVersion;
@@ -68,9 +69,10 @@ public class Palette<V> {
      *
      * @param byteBuf    the byte buf
      * @param serializer the serializer
+     * @param protocol   the protocol
      */
-    public void writeToNetwork(ByteBuf byteBuf, RuntimeDataSerializer<V> serializer) {
-        writeWords(byteBuf, serializer);
+    public void writeToNetwork(ByteBuf byteBuf, RuntimeDataSerializer<V> serializer, int protocol) {
+        writeWords(byteBuf, serializer, protocol);
     }
 
     public void readFromNetwork(ByteBuf byteBuf, RuntimeDataDeserializer<V> deserializer) {
@@ -96,11 +98,13 @@ public class Palette<V> {
         return false;
     }
 
-    protected void writeWords(ByteBuf byteBuf, RuntimeDataSerializer<V> serializer) {
+    protected void writeWords(ByteBuf byteBuf, RuntimeDataSerializer<V> serializer, int protocol) {
         byteBuf.writeByte(getPaletteHeader(this.bitArray.version(), true));
         for (int word : this.bitArray.words()) byteBuf.writeIntLE(word);
         this.bitArray.writeSizeToNetwork(byteBuf, this.palette.size());
-        for (V value : this.palette) ByteBufVarInt.writeInt(byteBuf, serializer.serialize(value));
+
+        BlockTranslator translator = BlockTranslator.getInstance();
+        for (V value : this.palette) ByteBufVarInt.writeInt(byteBuf, translator.getOldId(protocol, serializer.serialize(value)));
     }
 
     public void writeToStoragePersistent(ByteBuf byteBuf, PersistentDataSerializer<V> serializer) {

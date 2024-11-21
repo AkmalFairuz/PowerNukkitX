@@ -1,5 +1,7 @@
 package cn.nukkit.network.translator;
 
+import cn.nukkit.item.Item;
+import cn.nukkit.item.ItemID;
 import cn.nukkit.network.protocol.ProtocolInfo;
 import cn.nukkit.registry.ItemRegistry;
 import cn.nukkit.registry.Registries;
@@ -15,7 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ItemTranslator {
+public class ItemTranslator extends TBaseTranslator<Integer> {
 
     private static ItemTranslator instance = null;
 
@@ -35,12 +37,10 @@ public class ItemTranslator {
         }
     }
 
-    private final Map<Integer, Map<Integer, Integer>> oldToLatestMapping = new Int2ObjectOpenHashMap<>();
-    private final Map<Integer, Map<Integer, Integer>> latestToOldMapping = new Int2ObjectOpenHashMap<>();
     private final Map<Integer, Object2IntOpenHashMap<String>> itemRegistries = new Int2ObjectOpenHashMap<>();
-    private final Map<Integer, Integer> nullMapping = new Int2IntOpenHashMap();
 
     private ItemTranslator() {
+        super(new Int2ObjectOpenHashMap<>(), new Int2ObjectOpenHashMap<>(), new Int2ObjectOpenHashMap<>());
         instance = this;
 
         for (Map.Entry<Integer, String> entry : mappingFiles.entrySet()) {
@@ -81,31 +81,9 @@ public class ItemTranslator {
 
             oldToLatestMapping.put(protocol, oldToLatest);
             latestToOldMapping.put(protocol, latestToOld);
-            nullMapping.put(protocol, nullId);
+            fallbackMapping.put(protocol, nullId);
             itemRegistries.put(protocol, itemRegistry);
         }
-    }
-
-    public int getOldId(int protocol, int latestId) {
-        if(protocol == ProtocolInfo.CURRENT_PROTOCOL) {
-            return latestId;
-        }
-        var ret = latestToOldMapping.get(protocol).get(latestId);
-        if(ret == null) {
-            return nullMapping.get(protocol);
-        }
-        return ret;
-    }
-
-    public int getLatestId(int protocol, int oldId) {
-        if(protocol == ProtocolInfo.CURRENT_PROTOCOL) {
-            return oldId;
-        }
-        var ret = oldToLatestMapping.get(protocol).get(oldId);
-        if(ret == null) {
-            return Registries.ITEM_RUNTIMEID.get("minecraft:air");
-        }
-        return ret;
     }
 
     public int getOldFullId(int protocol, int latestFullId) {
@@ -124,5 +102,10 @@ public class ItemTranslator {
 
     public Object2IntOpenHashMap<String> getItemRegistry(int protocol) {
         return itemRegistries.get(protocol);
+    }
+
+    @Override
+    protected Integer getFallbackLatestId(int protocol) {
+        return Registries.ITEM_RUNTIMEID.get("minecraft:air");
     }
 }

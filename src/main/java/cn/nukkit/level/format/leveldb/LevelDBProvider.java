@@ -206,7 +206,7 @@ public class LevelDBProvider implements LevelProvider {
     }
 
     @Override
-    public Pair<byte[], Integer> requestChunkData(int x, int z) {
+    public Pair<byte[], Integer> requestChunkData(int x, int z, int protocol) {
         IChunk chunk = this.getChunk(x, z, false);
         if (chunk == null) {
             throw new ChunkException("Invalid Chunk Set");
@@ -231,7 +231,7 @@ public class LevelDBProvider implements LevelProvider {
                             sections[i] = new ChunkSection((byte) (i + getDimensionData().getMinSectionY()));
                         }
                         assert sections[i] != null;
-                        sections[i].writeObfuscatedToBuf(level, byteBuf);
+                        sections[i].writeObfuscatedToBuf(level, byteBuf, protocol);
                     }
                 } else {
                     for (int i = 0; i < total; i++) {
@@ -239,13 +239,13 @@ public class LevelDBProvider implements LevelProvider {
                             sections[i] = new ChunkSection((byte) (i + getDimensionData().getMinSectionY()));
                         }
                         assert sections[i] != null;
-                        sections[i].writeToBuf(byteBuf);
+                        sections[i].writeToBuf(byteBuf, protocol);
                     }
                 }
 
                 // Write biomes
                 for (int i = 0; i < total; i++) {
-                    sections[i].biomes().writeToNetwork(byteBuf, Integer::intValue);
+                    sections[i].biomes().writeToNetwork(byteBuf, Integer::intValue, protocol);
                 }
 
                 byteBuf.writeByte(0); // edu- border blocks
