@@ -11,6 +11,8 @@ import cn.nukkit.network.protocol.BlockEntityDataPacket;
 import cn.nukkit.network.protocol.UpdateBlockPacket;
 import cn.nukkit.network.translator.BlockTranslator;
 
+import java.util.HashSet;
+
 
 public class FakeStructBlock extends SingleFakeBlock {
 
@@ -32,9 +34,8 @@ public class FakeStructBlock extends SingleFakeBlock {
     }
 
     public void create(BlockVector3 targetStart, BlockVector3 targetEnd, Player player) {
-        this.lastPositions.add(this.getOffset(player));
-
-        lastPositions.forEach(position -> {
+        createAndGetLastPositions(player).add(this.getOffset(player));
+        lastPositions.get(player).forEach(position -> {
             UpdateBlockPacket updateBlockPacket = new UpdateBlockPacket();
             updateBlockPacket.blockRuntimeId = BlockTranslator.getInstance().getOldId(player.getSession().getProtocol(), block.getRuntimeId());
             updateBlockPacket.flags = UpdateBlockPacket.FLAG_NETWORK;
@@ -55,7 +56,7 @@ public class FakeStructBlock extends SingleFakeBlock {
 
     @Override
     public void remove(Player player) {
-        this.lastPositions.forEach(position -> {
+        this.lastPositions.getOrDefault(player, new HashSet<>()).forEach(position -> {
             UpdateBlockPacket packet = new UpdateBlockPacket();
             packet.blockRuntimeId = BlockTranslator.getInstance().getOldId(player.getSession().getProtocol(), player.getLevel().getBlock(position).getRuntimeId());
             packet.flags = UpdateBlockPacket.FLAG_NETWORK;

@@ -20,7 +20,7 @@ public abstract class BedrockPacketCodec extends MessageToMessageCodec<ByteBuf, 
     private int protocol = ProtocolInfo.CURRENT_PROTOCOL;
 
     @Override
-    protected final void encode(ChannelHandlerContext ctx, BedrockPacketWrapper msg, List<Object> out) throws Exception {
+    protected void encode(ChannelHandlerContext ctx, BedrockPacketWrapper msg, List<Object> out) throws Exception {
         protocol = msg.getProtocol();
         if (msg.getPacketBuffer() != null) {
             // We have a pre-encoded packet buffer, just use that.
@@ -43,7 +43,7 @@ public abstract class BedrockPacketCodec extends MessageToMessageCodec<ByteBuf, 
     }
 
     @Override
-    protected final void decode(ChannelHandlerContext ctx, ByteBuf msg, List<Object> out) throws Exception {
+    protected void decode(ChannelHandlerContext ctx, ByteBuf msg, List<Object> out) throws Exception {
         BedrockPacketWrapper wrapper = new BedrockPacketWrapper();
         wrapper.setProtocol(protocol);
         wrapper.setPacketBuffer(msg.retainedSlice());
