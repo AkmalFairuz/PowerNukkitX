@@ -21,7 +21,7 @@ public class InventorySlotPacket extends DataPacket {
 
     public int inventoryId;
     public int slot;
-    public FullContainerName fullContainerName;
+    public FullContainerName fullContainerName = new FullContainerName(ContainerSlotType.ANVIL_INPUT, null);
     public Item storageItem = Item.AIR; // is air if the item is not a bundle
     public Item item;
 

@@ -1472,8 +1472,14 @@ public final class BlockRegistry implements BlockID, IRegistry<String, Block, Cl
     }
 
     public Block get(BlockState blockState) {
+        if (blockState == null)
+            return null;
+
         FastConstructor<? extends Block> constructor = CACHE_CONSTRUCTORS.get(blockState.getIdentifier());
-        if (constructor == null) return null;
+
+        if (constructor == null)
+            return null;
+
         try {
             return (Block) constructor.invoke(blockState);
         } catch (Throwable e) {

@@ -78,6 +78,7 @@ import cn.nukkit.utils.GameLoop;
 import cn.nukkit.utils.Hash;
 import cn.nukkit.utils.LevelException;
 import cn.nukkit.utils.TextFormat;
+import cn.nukkit.utils.Utils;
 import cn.nukkit.utils.collection.nb.Int2ObjectNonBlockingMap;
 import cn.nukkit.utils.collection.nb.Long2ObjectNonBlockingMap;
 import com.google.common.base.Preconditions;
@@ -413,7 +414,7 @@ public class Level implements Metadatable {
                 .build();
         this.baseTickThread = new Thread() {
             {
-                setName("Level " + Level.this.getName() + " BaseTick Thread");
+                setName(Level.this.getFolderName());
             }
 
             @Override
@@ -423,12 +424,12 @@ public class Level implements Metadatable {
         };
         subTickGameLoop = GameLoop.builder()
                 .onTick(this::subTick)
-                .onStop(() -> log.info(levelName + " SubTick is closed!"))
+                .onStop(() -> log.debug(levelName + " SubTick is closed!"))
                 .loopCountPerSec(20)
                 .build();
         this.subTickThread = new Thread() {
             {
-                setName("Level " + Level.this.getName() + " SubTick Thread");
+                setName(Level.this.getFolderName() + " SubTick");
             }
 
             @Override
@@ -436,10 +437,6 @@ public class Level implements Metadatable {
                 subTickGameLoop.startLoop();
             }
         };
-        this.subTickThread.start();
-        if(getServer().getSettings().levelSettings().levelThread()) {
-            this.baseTickThread.start();
-        }
     }
 
     public static boolean canRandomTick(String blockId) {
@@ -558,6 +555,10 @@ public class Level implements Metadatable {
         if (!getChunk(spawn.getChunkX(), spawn.getChunkZ(), true).getChunkState().canSend()) {
             this.generateChunk(spawn.getChunkX(), spawn.getChunkZ());
         }
+        this.subTickThread.start();
+        if(getServer().getSettings().levelSettings().levelThread()) {
+            this.baseTickThread.start();
+        }
         log.info(this.server.getLanguage().tr("nukkit.level.init", TextFormat.GREEN + this.getFolderName() + TextFormat.RESET));
     }
 
@@ -602,7 +603,7 @@ public class Level implements Metadatable {
     }
 
     public void close() {
-        if(getServer().getSettings().levelSettings().levelThread()) {
+        if(getServer().getSettings().levelSettings().levelThread() && baseTickThread.isAlive()) {
             this.baseTickGameLoop.stop();
         } else remove();
     }
@@ -1033,6 +1034,7 @@ public class Level implements Metadatable {
     }
 
     public void doTick(int currentTick) {
+        players.values().forEach(player -> player.getSession().tick());
         requireProvider();
         try {
             getScheduler().mainThreadHeartbeat(currentTick);
@@ -1104,7 +1106,7 @@ public class Level implements Metadatable {
                     }
                 }
             }
-            this.updateBlockEntities.removeIf(blockEntity -> blockEntity.closed || !blockEntity.isValid() || !blockEntity.onUpdate());
+            this.updateBlockEntities.removeIf(blockEntity -> !(!blockEntity.closed && blockEntity.isValid() && blockEntity.onUpdate()));
 
             this.tickChunks();
             synchronized (changedBlocks) {
@@ -1167,9 +1169,10 @@ public class Level implements Metadatable {
                 gameRules.refresh();
             }
         } catch (Exception e) {
-            throw new LevelException("Failed to tick level " + getName(), e);
+            log.error(getServer().getLanguage().tr("nukkit.level.tickError",
+                    this.getFolderPath(), Utils.getExceptionMessage(e)), e);
         } finally {
-            // 清除所有tick缓存的方块
+            getPlayers().values().forEach(Player::checkNetwork);
             releaseTickCachedBlocks();
         }
     }
@@ -1500,7 +1503,7 @@ public class Level implements Metadatable {
                         int y = lcg >>> 8 & 0x0f;
                         int z = lcg >>> 16 & 0x0f;
                         BlockState state = section.getBlockState(x, y, z);
-                        if (randomTickBlocks.contains(state.getIdentifier())) {
+                        if (state != null && randomTickBlocks.contains(state.getIdentifier())) {
                             Block block = Block.get(state, this, (chunk.getX() << 4) + x, (section.y() << 4) + y, (chunk.getZ() << 4) + z);
                             block.setLevel(this);
                             block.onUpdate(BLOCK_UPDATE_RANDOM);
@@ -3841,6 +3844,10 @@ public class Level implements Metadatable {
         if(getServer().getSettings().levelSettings().levelThread()) {
             return baseTickGameLoop.isRunning();
         } else return this.server.getLevels().containsKey(this.levelId);
+    }
+
+    public boolean isThreadRunning() {
+        return baseTickThread.isAlive();
     }
 
     /**
