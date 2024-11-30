@@ -251,6 +251,6 @@ public class CreativeItemRegistry implements ItemID, IRegistry<Integer, Item, It
             buildCreativeContentPackets();
             needRebuild = false;
         }
-        return creativeContentPackets.get(protocol);
+        return creativeContentPackets.get(protocol).copy();
     }
 }
