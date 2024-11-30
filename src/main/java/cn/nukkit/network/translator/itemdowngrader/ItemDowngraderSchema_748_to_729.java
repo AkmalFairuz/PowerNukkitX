@@ -7,6 +7,10 @@ public class ItemDowngraderSchema_748_to_729 implements ItemDowngraderSchema{
 
     @Override
     public Pair<String, Integer> downgrade(String name, Integer meta) {
+        if(name.endsWith("_bundle")){
+            return Pair.of("minecraft:air", 0); // unsupported item
+        }
+
         return switch (name) {
             case "minecraft:skeleton_skull" -> Pair.of("minecraft:skull", 0);
             case "minecraft:wither_skeleton_skull" -> Pair.of("minecraft:skull", 1);
