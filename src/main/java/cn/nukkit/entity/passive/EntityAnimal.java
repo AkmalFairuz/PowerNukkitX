@@ -10,6 +10,7 @@ import cn.nukkit.level.format.IChunk;
 import cn.nukkit.math.Vector3;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.network.protocol.EntityEventPacket;
+import cn.nukkit.network.translator.ItemNetworkInfo;
 import cn.nukkit.network.translator.ItemTranslator;
 
 import java.util.Objects;
@@ -51,7 +52,7 @@ public abstract class EntityAnimal extends EntityIntelligent {
             EntityEventPacket pk = new EntityEventPacket();
             pk.event = EntityEventPacket.EATING_ITEM;
             pk.eid = this.getId();
-            pk.data = ItemTranslator.getInstance().getOldFullId(player.getSession().getProtocol(), item.getFullId());
+            pk.data = ItemTranslator.getInstance().latestToOld(new ItemNetworkInfo(item.getRuntimeId(), item.getDamage()), player.getSession().getProtocol()).fullId();
             player.dataPacket(pk);
         }
     }

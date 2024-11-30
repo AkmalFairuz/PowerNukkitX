@@ -4,6 +4,7 @@ import cn.nukkit.item.Item;
 import cn.nukkit.math.Vector3;
 import cn.nukkit.network.protocol.DataPacket;
 import cn.nukkit.network.protocol.LevelEventPacket;
+import cn.nukkit.network.translator.ItemNetworkInfo;
 import cn.nukkit.network.translator.ItemTranslator;
 
 /**
@@ -26,7 +27,7 @@ public class ItemBreakParticle extends ProtocolParticle {
         packet.x = (float) this.x;
         packet.y = (float) this.y;
         packet.z = (float) this.z;
-        packet.data = (ItemTranslator.getInstance().getOldId(protocol, item.getRuntimeId()) << 16) | item.getDamage();
+        packet.data = ItemTranslator.getInstance().latestToOld(new ItemNetworkInfo(item.getRuntimeId(), item.getDamage()), protocol).join();
         return new DataPacket[]{packet};
     }
 }

@@ -153,6 +153,10 @@ public class ItemRuntimeIdRegistry implements IRegistry<String, Integer, Integer
         }
     }
 
+    public Object2IntOpenHashMap<String> getRegistry(){
+        return REGISTRY;
+    }
+
     public record RuntimeEntry(String identifier, int runtimeId, boolean isComponent) {
     }
 }

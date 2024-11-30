@@ -11,6 +11,7 @@ import cn.nukkit.network.protocol.CreativeContentPacket;
 import cn.nukkit.network.protocol.ProtocolInfo;
 import cn.nukkit.network.protocol.types.inventory.CreativeContentEntry;
 import cn.nukkit.network.translator.BlockTranslator;
+import cn.nukkit.network.translator.ItemNetworkInfo;
 import cn.nukkit.network.translator.ItemTranslator;
 import com.google.gson.Gson;
 import io.netty.buffer.ByteBuf;
@@ -219,10 +220,7 @@ public class CreativeItemRegistry implements ItemID, IRegistry<Integer, Item, It
 
         int entryId = 0;
         for(var item : items){
-            if(ItemTranslator.getInstance().getOldIdNullable(protocol, item.getRuntimeId()) == null){
-                continue;
-            }
-            if(item.isBlock() && BlockTranslator.getInstance().getOldIdNullable(protocol, item.getBlockUnsafe().getRuntimeId()) == null){
+            if(ItemTranslator.getInstance().latestToOld(ItemNetworkInfo.fromItem(item), protocol).id() == 0){
                 continue;
             }
             entries.add(new CreativeContentEntry(++entryId, item));

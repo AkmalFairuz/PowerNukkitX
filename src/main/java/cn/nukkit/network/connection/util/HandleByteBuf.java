@@ -27,6 +27,7 @@ import cn.nukkit.network.protocol.types.itemstack.request.ItemStackRequestSlotDa
 import cn.nukkit.network.protocol.types.itemstack.request.TextProcessingEventOrigin;
 import cn.nukkit.network.protocol.types.itemstack.request.action.*;
 import cn.nukkit.network.translator.BlockTranslator;
+import cn.nukkit.network.translator.ItemNetworkInfo;
 import cn.nukkit.network.translator.ItemTranslator;
 import cn.nukkit.recipe.descriptor.ComplexAliasDescriptor;
 import cn.nukkit.recipe.descriptor.DefaultDescriptor;
@@ -1140,7 +1141,9 @@ public class HandleByteBuf extends ByteBuf {
         }
 
         int count = readShortLE();
-        int damage = readUnsignedVarInt();
+        int oldDamage = readUnsignedVarInt();
+
+        ItemNetworkInfo latestNetItem = ItemTranslator.getInstance().oldToLatest(new ItemNetworkInfo(runtimeId, oldDamage), protocol);
 
         Integer netId = null;
         if (!instanceItem) {
@@ -1156,11 +1159,11 @@ public class HandleByteBuf extends ByteBuf {
         String[] canPlace;
         String[] canBreak;
         Item item;
-        int translatedRuntimeId = ItemTranslator.getInstance().getLatestId(protocol, runtimeId);
+        int translatedRuntimeId = latestNetItem.id();
         if (blockRuntimeId == 0) {
-            item = Item.get(Registries.ITEM_RUNTIMEID.getIdentifier(translatedRuntimeId), damage, count);
+            item = Item.get(Registries.ITEM_RUNTIMEID.getIdentifier(translatedRuntimeId), latestNetItem.meta(), count);
         } else {
-            item = Item.get(Registries.ITEM_RUNTIMEID.getIdentifier(translatedRuntimeId), damage, count);
+            item = Item.get(Registries.ITEM_RUNTIMEID.getIdentifier(translatedRuntimeId), latestNetItem.meta(), count);
             BlockState blockState = Registries.BLOCKSTATE.get(blockRuntimeId);
             if (blockState != null) {
                 item.setBlockUnsafe(blockState.toBlock());
@@ -1235,15 +1238,15 @@ public class HandleByteBuf extends ByteBuf {
             return;
         }
 
-        Integer networkId = ItemTranslator.getInstance().getOldIdNullable(protocol, item.getRuntimeId());
-        if(networkId == null){
+        ItemNetworkInfo netItem = ItemTranslator.getInstance().latestToOld(ItemNetworkInfo.fromItem(item), protocol);
+        if(netItem.id() == 0){
             writeByte((byte) 0);
             return;
         }
 
-        writeVarInt(networkId);//write item runtimeId
+        writeVarInt(netItem.id());//write item runtimeId
         writeShortLE(item.getCount());//write item count
-        writeUnsignedVarInt(item.getDamage());//write damage value
+        writeUnsignedVarInt(netItem.meta());//write damage value
 
 
         if (!instanceItem) {
@@ -1264,7 +1267,7 @@ public class HandleByteBuf extends ByteBuf {
         try (LittleEndianByteBufOutputStream stream = new LittleEndianByteBufOutputStream(userDataBuf)) {
 
             Block block = item.getBlockUnsafe();
-            int data = item.getDamage();
+            int data = netItem.meta();
 
             if ((item instanceof ItemDurable && data != 0) || block != null) {
                 byte[] nbt = item.getCompoundTag();
@@ -1351,10 +1354,9 @@ public class HandleByteBuf extends ByteBuf {
                     this.writeVarInt(0); // item == null ? 0 : item.getCount()
                     return;
                 }
-                int networkId = ItemTranslator.getInstance().getOldId(protocol, ingredient.getRuntimeId());
-                int damage = ingredient.hasMeta() ? ingredient.getDamage() : 0x7fff;
-                this.writeShortLE(networkId);
-                this.writeShortLE(damage);
+                ItemNetworkInfo netItem = ItemTranslator.getInstance().latestToOld(ItemNetworkInfo.fromItem(ingredient), protocol);
+                this.writeShortLE(netItem.id());
+                this.writeShortLE(netItem.meta());
             }
             case MOLANG -> {
                 MolangDescriptor molangDescriptor = (MolangDescriptor) itemDescriptor;
@@ -1678,7 +1680,7 @@ public class HandleByteBuf extends ByteBuf {
     }
 
     public void writeVarIntItemRuntimeID(int runtimeId) {
-        this.writeVarInt(ItemTranslator.getInstance().getOldId(protocol, runtimeId));
+        this.writeVarInt(ItemTranslator.getInstance().latestToOld(new ItemNetworkInfo(runtimeId, 0), protocol).id());
     }
 
 

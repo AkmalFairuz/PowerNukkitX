@@ -41,6 +41,14 @@ public interface ProtocolInfo {
             Map.entry(PROTOCOL_685, dynamic("1.21.0"))
     );
 
+    Map<Integer, Integer> MINECRAFT_BIT_VERSIONS = Map.ofEntries(
+            Map.entry(PROTOCOL_748, (1 << 24) | (21 << 16) | (4 << 8)),
+            Map.entry(PROTOCOL_729, (1 << 24) | (21 << 16) | (3 << 8)),
+            Map.entry(PROTOCOL_712, (1 << 24) | (21 << 16) | (2 << 8)),
+            Map.entry(PROTOCOL_686, (1 << 24) | (21 << 16)),
+            Map.entry(PROTOCOL_685, (1 << 24) | (21 << 16))
+    );
+
     String MINECRAFT_VERSION_NETWORK = dynamic("1.21.40");
 
     SemVersion MINECRAFT_SEMVERSION = new SemVersion(1, 21, 4, 0, 0);

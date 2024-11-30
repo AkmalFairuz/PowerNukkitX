@@ -9,8 +9,10 @@ import cn.nukkit.item.ItemGoldenApple;
 import cn.nukkit.network.process.DataPacketProcessor;
 import cn.nukkit.network.protocol.EntityEventPacket;
 import cn.nukkit.network.protocol.ProtocolInfo;
+import cn.nukkit.network.translator.ItemNetworkInfo;
 import cn.nukkit.network.translator.ItemTranslator;
 import cn.nukkit.network.translator.ProtocolUtils;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -34,8 +36,9 @@ public class EntityEventProcessor extends DataPacketProcessor<EntityEventPacket>
                 return;
             }
 
-            int clientItemRuntimeID = ItemTranslator.getInstance().getLatestId(player.getSession().getProtocol(), pk.data >> 16);
-            int clientItemDamage = pk.data & 0xffff;
+            var clientItem = ItemTranslator.getInstance().oldToLatest(new ItemNetworkInfo(pk.data >> 16, pk.data & 0xffff), player.getSession().getProtocol());
+            var clientItemRuntimeID = clientItem.id();
+            var clientItemDamage = clientItem.meta();
 
             int predictedData = (hand.getRuntimeId() << 16) | hand.getDamage();
             if(((clientItemRuntimeID << 16) | clientItemDamage) != predictedData) {
@@ -55,12 +58,12 @@ public class EntityEventProcessor extends DataPacketProcessor<EntityEventPacket>
         Map<Integer, Player> targets = player.getViewers();
         targets.put(player.getLoaderId(), player);
 
-        var grouped = ProtocolUtils.groupByProtocol(targets.values().stream().toList());
+        var grouped = ProtocolUtils.groupByProtocol(new ObjectArrayList<>(targets.values()));
         for (var entry : grouped.entrySet()) {
             EntityEventPacket pk = new EntityEventPacket();
             pk.eid = player.getId();
             pk.event = EntityEventPacket.EATING_ITEM;
-            pk.data = (ItemTranslator.getInstance().getOldId(entry.getKey(), item.getRuntimeId()) << 16) | item.getDamage();
+            pk.data = ItemTranslator.getInstance().latestToOld(new ItemNetworkInfo(item.getRuntimeId(), item.getDamage()), entry.getKey()).join();
             Server.broadcastPacket(entry.getValue(), pk);
         }
     }
