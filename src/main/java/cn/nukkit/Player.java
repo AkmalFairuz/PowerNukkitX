@@ -2546,7 +2546,7 @@ public class Player extends EntityHuman implements CommandSender, ChunkLoader, I
                 pk.motionX = (float) motion.x;
                 pk.motionY = (float) motion.y;
                 pk.motionZ = (float) motion.z;
-                this.dataPacket(pk);  //Send to self
+                this.dataPacketImmediately(pk); // Send to self
             }
             if (this.motionY > 0) {
                 //todo: check this
