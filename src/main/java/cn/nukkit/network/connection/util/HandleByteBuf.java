@@ -1163,6 +1163,7 @@ public class HandleByteBuf extends ByteBuf {
         if (blockRuntimeId == 0) {
             item = Item.get(Registries.ITEM_RUNTIMEID.getIdentifier(translatedRuntimeId), latestNetItem.meta(), count);
         } else {
+            blockRuntimeId = BlockTranslator.getInstance().getLatestId(protocol, blockRuntimeId);
             item = Item.get(Registries.ITEM_RUNTIMEID.getIdentifier(translatedRuntimeId), latestNetItem.meta(), count);
             BlockState blockState = Registries.BLOCKSTATE.get(blockRuntimeId);
             if (blockState != null) {
