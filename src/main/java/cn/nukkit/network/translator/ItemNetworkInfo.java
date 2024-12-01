@@ -18,4 +18,8 @@ public record ItemNetworkInfo(
     public int fullId() {
         return (((short) id) << 16) | ((meta & 0x7fff) << 1);
     }
+
+    public boolean isNull(){
+        return id == 0;
+    }
 }

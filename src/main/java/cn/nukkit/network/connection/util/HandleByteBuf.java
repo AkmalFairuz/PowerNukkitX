@@ -1239,7 +1239,7 @@ public class HandleByteBuf extends ByteBuf {
         }
 
         ItemNetworkInfo netItem = ItemTranslator.getInstance().latestToOld(ItemNetworkInfo.fromItem(item), protocol);
-        if(netItem.id() == 0){
+        if(netItem.isNull()){
             writeByte((byte) 0);
             return;
         }

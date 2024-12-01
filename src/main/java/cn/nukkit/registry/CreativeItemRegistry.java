@@ -220,7 +220,7 @@ public class CreativeItemRegistry implements ItemID, IRegistry<Integer, Item, It
 
         int entryId = 0;
         for(var item : items){
-            if(ItemTranslator.getInstance().latestToOld(ItemNetworkInfo.fromItem(item), protocol).id() == 0){
+            if(ItemTranslator.getInstance().latestToOld(ItemNetworkInfo.fromItem(item), protocol).isNull()){
                 continue;
             }
             entries.add(new CreativeContentEntry(++entryId, item));
