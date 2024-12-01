@@ -23,14 +23,10 @@ public class BlockDowngraderSchema_712_to_686 implements BlockDowngraderSchema {
                 default -> -1;
             };
 
-            if (typeNum == -1) {
-                // Unknown slab type
-                states.putString("stone_slab_type", "cobblestone");
-                return Pair.of("minecraft:" + (isDouble ? "double_" : "") + "stone_block_slab", states);
+            if (typeNum != -1) {
+                states.putString("stone_slab_type_" + typeNum, slabType);
+                return Pair.of("minecraft:" + (isDouble ? "double_" : "") + "stone_block_slab" + typeNum, states);
             }
-
-            states.putString("stone_slab_type_" + typeNum, slabType);
-            return Pair.of("minecraft:" + (isDouble ? "double_" : "") + "stone_block_slab" + typeNum, states);
         }
 
         if (name.startsWith("minecraft:light_block_")) {

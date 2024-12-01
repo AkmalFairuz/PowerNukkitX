@@ -36,7 +36,7 @@ public class BlockTranslator extends TBaseTranslator<Integer> {
         super(new Int2ObjectOpenHashMap<>(), new Int2ObjectOpenHashMap<>(), new Int2ObjectOpenHashMap<>());
         instance = this;
 
-        Set<BlockState> latestStates = Registries.BLOCKSTATE.getAllState();
+        var latestStates = Registries.BLOCKSTATE.getAllState();
 
         BlockDowngrader downgrader = BlockDowngrader.INSTANCE;
 

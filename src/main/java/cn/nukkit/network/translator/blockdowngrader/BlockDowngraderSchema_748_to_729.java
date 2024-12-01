@@ -8,11 +8,8 @@ public class BlockDowngraderSchema_748_to_729 implements BlockDowngraderSchema{
 
     @Override
     public Pair<String, CompoundTag> downgrade(String name, CompoundTag states) {
-        if(name.endsWith("_skull")){
-            return Pair.of("minecraft:skull", states);
-        }
-
         return switch (name) {
+            case "minecraft:skeleton_skull", "minecraft:wither_skeleton_skull", "minecraft:player_head", "minecraft:zombie_head", "minecraft:creeper_head", "minecraft:dragon_head", "minecraft:piglin_head" -> Pair.of("minecraft:skull", states);
             case "minecraft:cherry_wood", "minecraft:mangrove_wood" -> {
                 states.putByte("stripped_bit", 0);
                 yield Pair.of(name, states);

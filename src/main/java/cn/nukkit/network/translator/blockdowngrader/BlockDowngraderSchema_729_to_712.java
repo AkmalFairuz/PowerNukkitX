@@ -1,5 +1,6 @@
 package cn.nukkit.network.translator.blockdowngrader;
 
+import cn.nukkit.block.property.enums.WallBlockType;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.network.protocol.ProtocolInfo;
 import it.unimi.dsi.fastutil.Pair;
@@ -10,8 +11,17 @@ public class BlockDowngraderSchema_729_to_712 implements BlockDowngraderSchema {
     public Pair<String, CompoundTag> downgrade(String name, CompoundTag states) {
         if (name.endsWith("_wall")) {
             String wallBlockType = name.substring(10, name.length() - 5);
-            states.putString("wall_block_type", wallBlockType);
-            return Pair.of("minecraft:cobblestone_wall", states);
+            var cobblestoneWall = false;
+            for(var type : WallBlockType.values()) {
+                if (type.name().equalsIgnoreCase(wallBlockType)) {
+                    cobblestoneWall = true;
+                    break;
+                }
+            }
+            if(cobblestoneWall) {
+                states.putString("wall_block_type", wallBlockType);
+                return Pair.of("minecraft:cobblestone_wall", states);
+            }
         }
 
         return switch (name) {
